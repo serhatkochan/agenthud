@@ -1,54 +1,46 @@
-# AgentHUD 0.6.0 kontrol kaydı
+# AgentHUD 0.7.0 · Rust + Tauri kontrol kaydı
 
-18 Ekim 2026. Bu kayıt, ilk çalışan masaüstü sürümünün kanıtlarını ve devam eden işleri ayırır. Bütün PRD'nin tamamlandığı iddiası değildir.
+18 Ekim 2026. Önceki Electron kanıtları `archive/ELECTRON-0.6-VERIFICATION.md` içinde tarihsel kayıt olarak korunur.
 
-## Doğrulananlar
+## Kaynak ve test
 
-- 0.6.0 Claude Code bağlantısı geliştirme ve paketlenmiş uygulamada ayrı ayar klasörüyle geçti. Gerçek Windows gözlemcisine örnek olaylar gönderilerek istek, onay bekleme, araçtan sonra devam ve yanıt bitişi doğrulandı. Bekleyen onay kompakt maskotta göründü. 380 px diyalog, ayar/izin koruma, yalnızca kendi bağlantısını kaldırma ve bozuk dosyada hata gösterme sınandı. Canlı Claude hesabı veya gerçek Claude Code oturumu kullanılmadı; bu kontrollerin yerine geçtiği iddia edilmez. `CLAUDE-TRACKING.md` kaynakları ve sınırları açıklar.
-- 0.6.0 paketinde ortak bağlantı bileşeninden sonra Cursor akışı ve genel Electron ekran kontrolleri yeniden geçti. Cursor iki, Antigravity beş, Codex bir kota ölçümüyle bağlıydı; Claude giriş gerekli durumundaydı. Yeni paket için odaklanma ve fiziksel hayalet modu deneyleri yeniden yapılmadı; port kontrolü kaynak sürümde aşağıdaki ek kapsamla yeniden yapıldı; önceki kayıtlar aşağıda sürümleriyle korunur. 69 test ilgili politika ve yerleşim regresyonlarını da içerir.
-- 0.6.0 Portable EXE üretildi; içindeki `win-unpacked/AgentHUD.exe` üzerinde yukarıdaki kontroller yapıldı. Dış portable sarmalayıcının fiziksel açılışı ayrıca sınanmadı. SHA256: `b033ec3d2d599eb504f170905e87b535e04052b3ecfde3da70d2c29977e281dd`. İmza durumu NotSigned.
+- `cargo test --manifest-path src-tauri/Cargo.toml`: **63 başarılı, 0 başarısız, 1 isteğe bağlı etkileşimli test atlandı**. Gerçek ön plan denemesi genel testte Windows odağını değiştirmemek için atlanır; ayrı WebView2 akışında kendi iki test penceresiyle ayrıca çalıştırıldı.
+- Testler gerçek Cursor SQLite dosyasını değiştirmeden okuma, hesap kimliği, sıfır/eksik kotalar, eski veri, zaman aşımı, yönlendirme, yarım/4 MiB üstü HTTP yanıtı, port PID/oluşturulma kimliği, pencere kimliği, olay sırası ve DPI/ekran sınırlarını kapsar.
+- Windows yerel testinde kendi PowerShell TCP sunucusu keşfedildi. Yanlış oluşturulma kimliği durdurmayı reddetti ve sunucu açık kaldı. Doğru süreç durdurulup aynı komut, Unicode/apostrof içeren gerçek çalışma klasörü ve Windows argümanlarıyla tekrar başlatıldı. Kullanıcının sunucuları durdurulmadı.
+- Gerçek Windows Cursor gözlemcisi geçici profilde nötr `{}` döndürdü; yalnızca yaşam döngüsü bilgisi kaydetti. Mevcut kancaları ve özgün dosya yedeğini koruma, bozuk ayarı reddetme ve yalnızca kendi gözlemcisini kaldırma testleri geçti.
+- TypeScript + Vite üretim derlemesi geçti. Aktif `package.json`, kilit dosyası ve uygulama ağacında Electron/Koffi bağımlılığı yoktur.
+- Bağımsız son incelemenin tek önemli bulgusu tek örnek korumasıydı. İkinci açılış regresyonu gerçek eski EXE'de önce başarısız oldu; resmî Tauri eklentisi ilk sıraya eklendikten sonra ikinci süreç 0 ile çıkıp gizli mevcut paneli geri getirdi. İncelemeci dar düzeltmede engel bulmadı.
 
-- Electron ana süreç sözdizimi, TypeScript ve Vite üretim derlemesi geçti.
-- `pnpm test`: 69 test, 69 başarılı. Kota, port, Antigravity, hayalet modu ve Cursor gözlemcisine ek olarak pencere seçimi, süreç kimliği, eski seçimleri reddetme ve ekran sınırı yerleşimi sınanır.
-- Odaklanma, farklı bir süreçte açılan iki geçici pencereyle gerçek Windows ön plan tanıtıcısı okunarak doğrulandı. Benzersiz çalışma alanı başlığı, küçültülmüş pencereyi geri getirme, birden çok pencere seçimi, kapalı seçimi reddetme, liste yenileme ve 380 px seçim diyaloğu geçti. Başarılı odaklanma sonrası sabitlenmiş HUD küçüldü ve odak hedef pencerede kaldı; HUD genişlerken ekranın çalışma alanında kaldı. Test kullanıcının IDE pencerelerine odaklanmadı. Başlık adı, tam proje yolu veya genel ajan arayüzünde sohbet sekmesi kanıtı sayılmaz.
-- Cursor bağlantı akışı geçici profilde arayüzden açıldı; düşünce olayıyla Çalışıyor, bitiş olayıyla Tamamlandı göründü. Takibi kapatma diğer kancaları korudu. Bozuk dosyada işlem reddedildi ve özgün içerik korundu. Bağlantı diyaloğu 380 px görünümde taşmadı. Test olayları resmî biçimdeki örneklerdi; gerçek Cursor ajanına görev gönderilmedi. Asıl kullanıcı profilindeki hook dosyası değiştirilmedi.
-- Cursor bağlantı akışı 0.5.0 paketinde de tekrar geçti; yeni odaklanma diyalogları mevcut bağlantı diyaloglarını etkilemedi.
-- Gerçek hesap kontrolü: Cursor, Antigravity ve Codex bağlı. Cursor Models ile Other Models ayrı. Antigravity üç model grubunu ve beş ölçümü döndürüyor. Claude, kullanıcının hesabı olmadığı için doğru biçimde giriş gerekli durumunda.
-- Antigravity'nin iki gerçek Idle oturumu proje klasörleri ve yerel servis kaynağıyla arayüzde doğrulandı. Ajan kontrol zamanı 5 saniyelik döngüde ilerlerken kota ölçüm tarihlerinin değişmediği test edildi. Çalışan/onay bekleyen bir kullanıcı oturumu test amacıyla başlatılmadı. Busy/Running/Canceling adları kurulu uygulama ikilisinde doğrulandı ve karşılıkları yanıt örnekleriyle sınandı; bilinmeyen değerler çalışma veya onay durumu sayılmıyor.
-- Gerçek Electron kontrolü hem geliştirme sürümünde hem 0.5.0 `release/win-unpacked/AgentHUD.exe` içinde geçti. Ana ekran, bütün sağlayıcı bağlantı diyalogları, ayarlar, Escape, üç gezinme sekmesi, 48 px kompakt görünüm, yüzen panel ve 380 px dar görünüm tıklandı. `test:focus` pakette iki ayrı test penceresiyle geçti. `test:ghost` paketlenmiş uygulamada da geçti; Windows N-API bileşeni başarıyla yüklendi.
-- Sabitleme ayarı açılışta, kapatılırken ve yeniden açılırken `BrowserWindow.isAlwaysOnTop()` ile doğrulandı. 0.3.0 kontrolünde görünüm değişimi sonrasında sabitlemenin düştüğü ayrıca bulundu. Bool çağrısı da Electron'da varsayılan `floating` seviyesini seçiyormuş; önceki 0.1.1 düzeltmesi eksik kaldı. Windows için `pop-up-menu` seviyesi seçildi; panel/çubuk değişimi sonrası sabitleme yeniden doğrulandı. Ayrıntı ve kaynaklar `GHOST-MODE.md` içinde. Simge durumuna küçültme `isMinimized()` ile ve tepsiye gizleme `isVisible()` ile doğrulandı.
-- Hayalet modunda gerçek Windows tıklama geçişi bayrağı kota alanında aktif, maskot bölgesinde pasif bulundu. Panel açma, küçültme, kapatma ve normal görünüme dönme etkileşimi sınandı. Fiziksel fareyle hayalet modundaki maskota tıklandı ve panel açıldı. Ana kısayol doluyken seçilen Ctrl + Alt + H gerçek klavye girdisiyle hayalet modunu kapattı. Alt basılı tutma geçişi mantık testinde ve native okuyucu yükleme testinde var; fiziksel kısa Alt denemesi basılı tutmayı kanıtlamadı.
-- Klavye odağı görünür; normal/dar panelde ana içeriğin yatay taşmadığı doğrulandı. Renderer'da sıfır konsol hatası / sayfa hatası kaydedildi.
-- Port kabul testi yalnızca kendi geçici HTTP sunucusunda geçti: ortak `node_modules` içindeki script, `apps/Gerçek çalışma alanı` klasöründe çalıştırıldı. Gerçek klasör PID ve oluşturulma zamanıyla doğrulandı; yeniden başlatılan HTTP sunucusu `process.cwd()` değerini aynı klasör olarak döndürdü. Windows program yolunda boşluk olmasına ilişkin önceki düzeltme de bu akışta kapsanıyor.
-- Canlı mevcut portlar listelendi; kullanıcının çalışan sunucuları durdurulmadı.
-- Muted metin `#A4AFA6 / #1C231E`: 7.08:1. Küçük soluk metin `#7B8A7E / #111612`: 5.04:1. İkisi de normal metinde AA eşiğini geçiyor.
-- 0.5.0 Portable EXE üretildi; içindeki paketlenmiş uygulamanın Electron ekran/tıklama, pencereye odaklanma ve Windows hayalet modu kontrolleri geçti. Fiziksel fare ve kısayol testleri 0.3.0 geliştirme sürümünde yapıldı. Portable dış sarmalayıcı için ayrıca fiziksel giriş testi yapılmadı.
-- İmza durumu `NotSigned`. SHA256 kaydı `release/SHA256SUMS.txt` içinde.
+## Gerçek masaüstü
 
-Yerel kanıtlar: `.cache/claude-ui-result.json`, `.cache/claude-tracking-connect.png`, `.cache/claude-tracking-connect-380.png`, `.cache/claude-tracking-blocked.png`, `.cache/claude-tracking-blocked-compact.png`, `.cache/claude-tracking-error.png`, `.cache/focus-result.json`, `.cache/focus-choices.png`, `.cache/focus-choices-380.png`, `.cache/ui-result.json`, `.cache/cursor-ui-result.json`, `.cache/cursor-tracking-connect.png`, `.cache/cursor-tracking-connect-380.png`, `.cache/cursor-tracking-active.png`, `.cache/cursor-tracking-error.png`, `.cache/ghost-result.json`, `.cache/physical-ghost-result.json`, `.cache/ghost-compact.png`, `.cache/ghost-panel.png`, `.cache/dashboard.png`, `.cache/compact.png`, `.cache/panel.png`, `.cache/panel-settings-380.png`, `.cache/agents-panel-380.png`, `.cache/agents.png`, `.cache/ports.png`. Bunlar gerçek kullanım bilgisi içerebildiğinden Git dışında tutulur.
+`scripts/verify-tauri.mjs` uygulamanın kendi WebView2 penceresine ayrı test profili üzerinden bağlanır. `scripts/tauri-window.ps1`, yalnızca testin sahip olduğu PID ve doğrulanan HWND için Windows pencere bayraklarını okur; yeniden boyutlandırma dar ekran kontrolü içindir. Renderer'a HWND verilmez.
 
-## Port adlandırması için son kapsam kontrolü
+Geliştirme EXE'sinde geçen kontroller:
 
-Go modül adı `go.mod` dosyasından, modül direktifinin [resmî tanımına](https://go.dev/ref/mod#go-mod-file-module) göre okunur. Go/Cargo başlatıcısının farklı adlı sunucu alt süreci de geliştirici portu olarak tanınır; daha önce doğrulanan aynı süreç başlatıcı kapandıktan sonra korunur. PID, komut veya süreç kimliği değişirse bu tanıma devralınmaz. Yeniden başlatılan kendi süreç tekrar keşfedilir. Manifest adları yalnızca sınırlı uzunluktaki metinler olarak arayüze taşınır; nesne tipindeki hatalı ad için klasör adı kullanılır.
+- Gerçek oturumlarla **Cursor: 2, Antigravity: 5, Codex: 1** kota ölçümü. Bağımsız Claude sağlayıcısı yok; üç kart ve üç gezinme sekmesi.
+- Cursor bağlantısını arayüzden açma → resmî biçimde düşünce olayı → Çalışıyor → bitiş olayı → Tamamlandı → bağlantıyı kaldırma. Kullanıcının asıl `.cursor` ayarları değiştirilmedi.
+- Ayrı iki Rust penceresini Cursor adıyla açma, seçim diyaloğu ve küçültülmüş hedefi seçme. Windows'un gerçek ön plan penceresi hedef oldu, hedef geri yüklendi ve HUD kompakt kaldı. Kullanıcının IDE pencerelerine odaklanılmadı.
+- 48 px kompakt çubuk, 420 px panel, 380 px pencere/ayarlar; yatay taşma yok. Sabitleme gerçek `WS_EX_TOPMOST` ile açma/kapamada doğrulandı.
+- Hayalet modu gerçek `WS_EX_TRANSPARENT` bayrağı ve maskot alanına göre kontrol edildi; kapatınca etkileşim geri geldi. Küçültme, gizleme ve tekrar gösterme gerçek native bayraklarla geçti.
+- Görünüm geçişindeki Ghost kilidi/Tauri ana iş parçacığı bekleşmesi bulundu ve düzeltildi. Aynı uçtan uca kontrol düzeltmeden sonra geçti. Ayrılmış maskot DOM elemanının boş dikdörtgen bildirimi de düzeltildi; son çalışmada renderer sayfa hatası yok.
 
-İki yeni test önce başarısız oldu, uygulamadan sonra geçti. Yerel dinleyici → gerçek cwd → durdur → aynı komut/klasörde başlat → yeniden listede gör akışı hem normal Node test sunucusunda hem farklı adlı alt süreçte geçti. İkinci deney, Go şeklinde adlandırılmış başlatıcı ve backend süreçleri için kopyalanmış Node çalışma dosyaları kullanır; gerçek Go veya Rust derleyicisiyle çalıştırıldığı iddia edilmez. İlgili komut: `node scripts/verify-ports.mjs --compiled-fixture`. Kullanıcının sunucuları durdurulmadı.
+Yerel görüntüler `.cache/tauri-dashboard.png`, `tauri-agents.png`, `tauri-focus-choices.png`, `tauri-panel.png`, `tauri-compact.png`, `tauri-settings-380.png`; makine sonucu `.cache/tauri-ui-result.json` içindedir. Canlı kullanım ve proje bilgisi içerebildikleri için Git dışında tutulur.
 
-## Tasarım teslim kontrolü
+## Dağıtım
 
-- Hard Gate PASS: üretim derlemesi ve gerçek Electron kontrolleri geçti; bağlantı/yükleme/boş/hata durumları mevcut, sahte kota ve pazarlama sayıları yok. Görünür eylemlerin kaynak bağlantıları incelendi; ana akışlar tıklanarak doğrulandı. Hesap girişi, dış kullanım sayfaları ve gerçek masaüstü kısayolu için canlı kabul sınırı yukarıda belirtilir.
-- Purpose Gate PASS: renk, tipografi, kart grupları, maskot ve geçişlerin amacı `SPEC.md` içinde yazılı. Gerçek kota dışında dekoratif grafik kullanılmıyor.
-- Liveliness PASS: ENERGY 2 / RHYTHM 2 / MOTION 2; kalan yüzdeler odak noktası, sağlayıcı grupları içerik düzenini belirliyor, hareket azaltma tercihi uygulanıyor.
-- Craftsmanship PASS: ana/dar/kompakt görünümler kontrol edildi; belirsiz çalışma durumları ve eksik limitler açıkça belirtiliyor. Kontrol edilmeyen bir özelliğe test edildi denmiyor.
+`pnpm package` başarılı: optimize Rust EXE ve x64 NSIS yükleyicisi üretildi. Yukarıdaki tüm WebView2 ekran/pencere akışı **son üretim EXE'sinde tekrar geçti**; renderer sayfa hatası yok. Üç sağlayıcıya ek olarak 3 / 3 bağlantı sayacı doğrulandı. Tek örnek ikinci açılış testi geçti.
 
-## Hedef içinde açık kalan işler
+Son üretim kontrolünde kendi Node TCP test sunucusu arayüzden durdurulup yeniden başlatıldı. Yanıttaki PID değişti; rastgele test kimliği ve Unicode/apostrof içeren `cwd` birebir aynı kaldı. Yalnızca testin kendi portuna dokunuldu. Bu sunucunun Node çalışma ortamı test içindir; dağıtıma Node eklenmez.
 
-1. Cursor ve Claude Code gözlemcilerinin gerçek IDE/CLI'den olay alarak canlı kabulü. Claude olay bağlantısı 0.6.0'da tamamlandı ve örnek olaylarla doğrulandı. Cursor'un çalışma/bitiş/boşta akışı örnek olay → gerçek Windows gözlemcisi → arayüz zincirinde bağlı; ayrı onay bekleme kaynağı bulunmadı. Antigravity'nin yerel durumları bağlı; ayrı onay ve tamamlanma olayı kaynakta bulunmadığı için gösterilmiyor. Codex task olayları okunabiliyor.
-2. Gerçek IDE/terminal ortamlarının tamamında odaklanmanın canlı kabulü. Mekanizma iki ayrı test penceresinde doğrulandı; genel ajan arayüzünde belirli sohbet sekmesi seçilmez.
-3. Claude hesabı edinildiğinde gerçek giriş ve kullanım yanıtının uçtan uca testi.
-4. Alt basılı tutma davranışının fiziksel kabulü. Maskot etkileşimi, tıklama geçişi ve geri çağırma kısayolu tamamlandı; geçici panel mantık testinde doğrulandı.
+| Dosya | Boyut | SHA256 |
+| --- | --- | --- |
+| `release/AgentHUD-0.7.0-Setup.exe` | 4.188.898 bayt | `42bdb99f79b7abed6ca4f6f48ff2660d5588d28fe13b340bfe984962587f14d9` |
+| `release/AgentHUD-0.7.0-Windows.exe` | 15.228.416 bayt | `84306f0edd884f0b29e7febf69f660a2d803ddb9f9966087eb2b047aa168db68` |
 
-Windows gerçek cwd okuması tamamlandı ve gerçek alt klasör testiyle doğrulandı. Erişilemeyen süreçlerde yeniden başlatma kapalı tutulur. PEB yerleşimi işletim sisteminin iç yapısı olduğundan gelecekteki Windows sürümlerinde tekrar doğrulanmalıdır. İlgili API sınırı [Microsoft'un NtQueryInformationProcess belgesinde](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess) açıklanır. Sabitleme düzeltmesi [kullanılan Electron sürümünün pencere uygulaması](https://github.com/electron/electron/blob/v44.9.0/shell/browser/native_window_views.cc) ve gerçek pencere testiyle karşılaştırıldı.
+İki dosyanın imzası `NotSigned`. Kurulumun kullanıcı hesabına gerçekten kurulması bu geliştirme kontrolünde yapılmadı; yükleyici üretildi ve onun paketlediği uygulama EXE'si çalıştırıldı. Kopyalanmış son EXE'de `--live-check` tekrar **Cursor 2 / Antigravity 5 / Codex 1, üçü bağlı** döndürdü. SHA256 kaydı `release/SHA256SUMS.txt` içine eski sürümler korunarak eklendi.
 
-Herdr entegrasyonu PRD'de isteğe bağlıdır; uygulanmadı ve zorunlu tamamlanma kapısı sayılmaz.
+## Kabul sınırları
 
-Ana hedef tamamlandı sayılmaz. Bu canlı kabul engelleri en az üç ardışık hedef turunda tekrarlandı. Bağımsız geliştirme ve örnek olay kontrolleri tamamlandı; hesap ve fiziksel kullanıcı kabulü olmadan kalan kanıt üretilemiyor. Hedef engelli durumuna alınır; kullanıcı bu kontrolleri yapabildiğinde devam edilebilir. Kota ekranının çalışması bütün izleme PRD'sinin tamamlandığı olarak işaretlenmez.
+Cursor'un gerçek IDE görevinden olay alması kullanıcı bağlantısı etkinleşince doğrulanmalıdır. Ayrı profildeki resmî biçimli olaylar bu canlı kabulün yerine geçmez. Bütün gerçek IDE/terminal ortamları odaklanma için denenmedi. Alt basılı tutmanın fiziksel klavye kabulü yapılmadı; durum geçişi mantık testlerinde kapsandı. Önceki Electron fiziksel kontrolleri yeni sürümün kanıtı değildir.
+
+Kaynağın döndürmediği onay veya tamamlanma durumları uydurulmaz. Herdr isteğe bağlıdır ve uygulanmadı. Claude entegrasyonu son istekle kaldırıldığı için Claude hesabı/giriş testi beklenmiyor. Windows paketi imzasızdır; WebView2 çalışma ortamı gerekir.

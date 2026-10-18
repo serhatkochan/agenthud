@@ -1,35 +1,25 @@
-# Ajan durumu için doğrulanan kaynaklar
+# Ajan durumu kaynakları · Tauri 0.7.0
 
-18 Ekim 2026. Kota erişiminden ayrı, salt okunur inceleme.
+18 Ekim 2026. Kota okuma ve ajan durum takibi birbirinden bağımsızdır. `app.rs` oturumları 5 saniyelik, geciken turları atlayan zamanlayıcıyla okur. Süreç varlığı veya CPU etkinliği çalışma/onay durumu sayılmaz.
 
 ## Antigravity
 
-Açık uygulamanın yerel language server'ında `GetAllCascadeTrajectories` isteği HTTP 200 döndü. Aynı servis ve CSRF bağlamı kota isteğinde zaten kullanılıyor. Yanıtta `trajectorySummaries` sözlüğü var. Gözlenen alanlar:
+`providers.rs`, bulunan yerel language server'a `GetAllCascadeTrajectories` isteği gönderir. Yalnızca `127.0.0.1`, bulunan port ve CSRF bağlamı kullanılır. Yönlendirme izlenmez; süre 1.6 saniye, yanıt sınırı 4 MiB'dir. Yerel HTTPS sertifika istisnası uzak sağlayıcı istemcisine uygulanmaz.
 
-- Sözlük anahtarı ve `trajectoryId`: oturum kimliği.
-- `status`: iki gerçek kayıtta `CASCADE_RUN_STATUS_IDLE`.
-- `lastModifiedTime`, `createdTime`, `lastUserInputTime`: tarih alanları.
-- `workspaces[].workspaceFolderAbsoluteUri`: proje klasörünün `file:` URI'si.
-- `trajectoryMetadata.workspaces` ve `workspaceUris`: alternatif proje alanları.
+`trajectorySummaries`, oturum kimliği, çalışma alanının `file:` URI'si ve etkinlik tarihi okunur. Birden fazla servisin kayıtları kimlikle birleştirilir; yeni kayıt tercih edilir. İstem, yanıt ve sohbet başlıkları aktarılmaz.
 
-Kurulu language server ikilisinde `CASCADE_RUN_STATUS_IDLE`, `BUSY`, `RUNNING`, `CANCELING` ve `UNSPECIFIED` enum adları doğrulandı. Idle → Boşta, Busy → Meşgul, Running → Çalışıyor, Canceling → Durduruluyor eşleştirmesi kullanılıyor. Bilinmeyen değerler, UNSPECIFIED dahil, bilinmiyor olarak kalır. Ayrı bir onay bekleme veya tamamlandı durumu gözlenmedi; Idle tamamlanma kanıtı sayılmaz.
-
-`electron/antigravity-client.mjs` bu kaynağı 5 saniyelik ajan kontrolüne bağlar. Birden fazla language server'dan gelen oturumlar kimlikle birleştirilir; yeni kayıt tercih edilir. Proje `file:` URI'sinden alınır. İstem, yanıt ve sohbet başlıkları arayüze aktarılmaz. Yerel istek 1.6 saniye ve 4 MiB ile sınırlıdır; yönlendirme izlenmez. Servis okunamazsa süreç satırı çalışma durumu bilinmiyor olarak gösterilir.
-
-İstek ve yanıt incelemesi `.research/agent-probe.mjs` içinde, istem/yanıt ve başlık metinleri maskelenerek yapıldı. Kimlik bilgileri rapora yazılmadı. Gerçek uygulamada iki Idle oturumu ve proje klasörleri görüldü; çalışan/onay bekleyen bir kullanıcı oturumu test amacıyla başlatılmadı. Diğer enum eşleştirmeleri yerel yanıt örnekleriyle test edildi.
-
-Resmi [Antigravity hooks belgesi](https://antigravity.google/docs/hooks), `SessionStart`, `PreInvocation`, `PreToolUse`, `PostToolUse` ve `Stop` olaylarını tanımlıyor. `Stop.fullyIdle` ile arka plan işlerinin bitişi ayrılabiliyor. Bu belgede genel bir onay bekleme olayı görülmedi. Gözlem entegrasyonu, onay kararına müdahale eden çıktı üretmemeli.
+`IDLE` → Boşta, `BUSY` → Meşgul, `RUNNING` → Çalışıyor, `CANCELING` → Durduruluyor. Bilinmeyen durum bilinmiyor kalır. Ayrı onay bekleme veya tamamlanma kanıtı bulunmadığından Idle, Tamamlandı olarak gösterilmez. Gerçek Idle oturumları okundu; diğer enumlar kontrollü yanıtlarla sınandı.
 
 ## Cursor
 
-Resmi [Cursor hooks belgesinde](https://cursor.com/docs/hooks) `conversation_id`, `generation_id`, `workspace_roots` ve `hook_event_name` ortak alanları doğrulandı. `beforeSubmitPrompt`, `stop`, `sessionStart`, `sessionEnd` gibi yaşam döngüsü olayları var. Çalışma ve bitiş takibi için uygun; onay bekleme olayının ayrı ve güvenilir kaynağı henüz bulunmadı.
+`cursor_tracker.rs` isteğe bağlı kullanıcı bağlantısını yönetir. Windows gözlemcisi `native/cursor.ps1` dosyasıdır. Kullanıcı Ajanlar ekranındaki bağlantı diyaloğundan etkinleştirir; kendi `hooks.json` dosyası yedeklenir ve mevcut kancalar korunur.
 
-0.4.0'da `electron/cursor-tracking.mjs` ve Windows PowerShell gözlemcisi bu bağlantıyı sağlıyor. Ajanlar ekranındaki kullanıcı eylemiyle etkinleşir. Yalnızca sessionStart, afterAgentThought, afterAgentResponse, stop ve sessionEnd izlenir. İzin kancalarına eklenmez; boş JSON çıktısı komut onayı veya takip görevi üretmez. Düşünce/yanıt metni alınsa bile yalnızca olay türü, proje, oturum/tur kimliği ve zaman diske yazılır.
+`sessionStart`, `afterAgentThought`, `afterAgentResponse`, `stop`, `sessionEnd` izlenir. Yalnızca olay türü, oturum/tur kimliği, proje ve zaman saklanır. Boş JSON çıktısı izin kararı veya ek görev üretmez. Bozuk/bilinmeyen yapılandırma değiştirilmez. Ayrıntı `CURSOR-TRACKING.md` içindedir.
 
-Yapılandırma değişimi özgün baytları yedekler; geçersiz UTF-8/JSON ve bilinmeyen sürüm değiştirilmez. Kaldırma yalnızca doğru veri klasörüne sahip AgentHUD v1 gözlemcilerini hedefler. Geç gelen bitiş ve yeni tur olayları ayrı değerlendirilir.
+Gerçek PowerShell gözlemcisine resmî biçimde örnek olay → Rust okuyucu → WebView2 arayüz zinciri ayrı profilde doğrulandı. Kullanıcının asıl IDE ayarları değiştirilmedi. Gerçek Cursor görevinden olay alma kabulü kullanıcı bağlantıyı etkinleştirdiğinde yapılmalıdır. Kaynak: [Cursor hooks](https://cursor.com/docs/hooks).
 
-Gerçek Windows gözlemcisi ve arayüz bağlantısı, resmî biçimdeki örnek olaylarla geçici Cursor profillerinde doğrulandı. Çalışma ve bitiş satırları 5 saniyelik taramayla göründü; kaldırma ve bozuk ayarı koruma sınandı. Kullanıcının asıl `.cursor/hooks.json` dosyası hâlâ yok; kullanıcı profilindeki hook yapılandırmaları değiştirilmedi. Gerçek IDE'den olay alma kabulü, kullanıcı bağlantıyı etkinleştirdikten sonra yapılmalı. Ayrıntı `CURSOR-TRACKING.md` içinde.
+## Codex
 
-## Claude Code
+`sessions.rs`, yerel güncel oturum kayıtlarının sınırlı kuyruğundan task başlangıç/bitiş ve doğrulanabilir olayları okur. Boşta ile tamamlanma ayrılır; eski/eksik kanıt bilinmiyor olarak kalır. Token, istem ve yanıt metni arayüze gönderilmez. Oturumlar sınırlı sayıda ve sürede okunur.
 
-0.6.0'da isteğe bağlı kullanıcı ayarı bağlantısı eklendi. UserPromptSubmit, PostToolUse/PostToolUseFailure, Notification, Stop/StopFailure ve SessionStart/SessionEnd olayları izlenir. İzin bildirimi bekleme kanıtıdır; izin kararını veren kancalar kullanılmaz. Yanıt bitişi bütün hedefin bittiği iddiasını taşımaz. Kullanıcının Claude hesabı olmadığı için canlı oturum test edilmedi. Ayrı profilde gerçek Windows gözlemcisi, bağlantı diyaloğu, çalışma/onay/devam/bitiş ve kompakt maskot kontrol edildi. Ayrıntı ve kaynak `CLAUDE-TRACKING.md` içinde.
+Bağımsız Claude sağlayıcısı ve gözlemcisi kullanıcı isteğiyle kaldırıldı. Antigravity'nin Claude/GPT kota grubu bu karardan bağımsızdır.

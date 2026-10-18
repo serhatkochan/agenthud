@@ -1,29 +1,16 @@
-# Hayalet modu
+# Hayalet modu · Tauri 0.7.0
 
-0.3.0, Windows. `GhostMode` yalnızca etkileşim durumunu yönetir; kota ve oturum bağlantılarına erişmez.
+Rust `ghost.rs` yalnızca etkileşim durumunu yönetir. `app.rs` Windows giriş bilgisini ve Tauri pencere işlemlerini bağlar.
 
-## Davranış
+- Ayarlardan açılınca 48 piksel çubuğa geçilir. Kota alanı tıklamaları arkaya iletir; maskotun alanı etkileşime açıktır. Panel açıkken tıklama geçişi kapalıdır.
+- Çubuğun üzerindeyken Alt basılı tutmak geçici panel açar. Alt bırakılınca önceki çubuk konumuna dönülür. Ctrl + Alt, AltGr olabileceği için tetiklemez.
+- Normal görünüm, tepsi veya geri çağırma kısayolu hayalet modunu kapatır. Açılışta kapalıdır. Kısayol kaydedilemezse etkinleştirilemez.
+- Gizli veya küçültülmüş pencerede giriş konumu okunmaz. Açık modda 40 ms kontrol yapılır; diğer durumlarda hızlı döngü yalnızca kapalı ayarı kontrol eder. Yazılan karakterler izlenmez veya saklanmaz.
+- Rust, maskotun bildirdiği sonlu dikdörtgeni en fazla 80 × 48 piksel ve ilk 100 piksel içinde doğrular. Windows fiziksel koordinatları pencere ölçeğiyle arayüz koordinatlarına çevrilir.
+- Windows bilgisi veya pencere işlemi başarısız olursa etkileşim açılır ve panel geri çağrılır.
 
-- Ayarlardan açıldığında küçük çubuğa geçer. Kota alanı tıklamaları arkaya iletir. Maskotun en az 44 × 44 piksel alanı etkileşime açık kalır.
-- Maskot paneli kalıcı açar; panel küçültülünce tıklama geçişi sürer. Panel içindeki Kapat, normal görünüm, tepsi veya geri çağırma kısayolu hayalet modunu kapatır.
-- Çubuğun üzerindeyken Alt basılı tutmak geçici panel açar. Alt bırakıldığında çubuk önceki konumuna döner; ekran kenarındaki panel sınırlandırması çubuğun konumunu kaydırmaz.
-- Ctrl + Alt, AltGr olabileceği için geçici panel sayılmaz. Yalnızca Alt ve Ctrl değiştirici durumları okunur; yazılan karakterler izlenmez veya kaydedilmez.
-- Gizli veya küçültülmüş pencerede klavye/fare konumu okunmaz. Hayalet modu kapalıyken hızlı kontrol zamanlayıcısı çalışmaz. Windows giriş bilgisi okunamazsa hayalet modu kapanır ve pencere etkileşime döner.
+Pencere özellikleri okunurken Ghost kilidi tutulmaz: Tauri ana iş parçacığına dönen çağrı, aynı kilidi isteyen IPC'yi bekletmemelidir. Gerçek WebView2 testinde yakalanan eşzamanlı kilitlenme bu sınırla düzeltildi.
 
-## Sınırlar
+Kanıt: `ghost.rs` durum/konum testleri, `scripts/verify-tauri.mjs` ile gerçek `WS_EX_TRANSPARENT`, sabitleme, görünüm ve geri çağırma kontrolleri. Alt basılı tutma geçişi mantık testlerinde kapsanır; fiziksel klavyede basılı tutma kabulü ayrıca yapılmalıdır. Önceki Electron fiziksel testleri yeni Tauri sürümüne kanıt sayılmaz.
 
-Renderer, maskotun pencere içindeki dikdörtgenini dar bir IPC ile bildirir. Ana süreç sayısal değerleri ve en büyük alanı doğrular; tüm çubuğun tıklanabilir bölge olarak bildirilmesine izin vermez. Windows ekran noktası ve pencere sınırları Electron'ın aynı DIP koordinat sistemindedir. Tarayıcı önizlemesinde yerel giriş desteği yoktur.
-
-`Ctrl + Shift + H` doluysa `Ctrl + Alt + H`, sonra `Ctrl + Shift + G` denenir. Hiçbiri kaydedilemezse hayalet modu etkinleştirilmez. Kullanılan kısayol arayüzde görünür; açılışta hayalet modu kapalıdır.
-
-## Windows sabitlemesi
-
-Electron 44.9.0 bağlamasında `setAlwaysOnTop` için varsayılan seviye `floating` olarak tanımlanır. Windows uygulaması bu ve bazı diğer seviyelerde pencereyi görev çubuğunun arkasına taşıyan yolu çalıştırır. Bu bilgisayarda görünüm değişiminden sonra `isAlwaysOnTop()` false döndü ve fiziksel araç pencere yerine Chrome'u gördü. `pop-up-menu` seviyesiyle bu yol devre dışı kaldı; gerçek pencere kontrolü ve sonraki fare denemesi geçti. Önceki sadece ayarı açma/kapama kontrolü bu geçişi kapsamıyordu.
-
-Kaynaklar: [Electron 44.9.0 bağlaması](https://github.com/electron/electron/blob/v44.9.0/shell/browser/api/electron_api_base_window.cc), [Windows pencere uygulaması](https://github.com/electron/electron/blob/v44.9.0/shell/browser/native_window_views.cc), [tıklama geçişi API'si](https://github.com/electron/electron/blob/main/docs/tutorial/custom-window-interactions.md), [GetAsyncKeyState](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate), [Koffi Windows bağlaması](https://koffi.dev/start).
-
-## Kanıt
-
-`tests/ghost.test.mjs` durum geçişleri ve konum dönüşünü sınar. `scripts/verify-ghost.mjs` gerçek Windows pencere stilindeki tıklama geçişini, maskot bölgesini, ilk girdi öncesinde görünürlüğü ve görünüm değişiminden sonra sabitlemeyi kontrol eder. Fiziksel Windows aracıyla hayalet modu açıkken maskota tıklandı ve panel açıldı; Ctrl + Alt + H ile hayalet modunun kapandığı ana süreç güncellemesinde görüldü.
-
-Fiziksel araç yalnızca kısa Alt basıp bırakma sunuyor. Bu denemede geçici panel gözlenmedi; basılı tutma davranışının fiziksel kabulü doğrulanmış sayılmıyor. Basılı tutma ve bırakma geçişleri mantık testleriyle, Windows tuş okuyucusunun yüklenmesi gerçek Electron sürecinde doğrulandı.
+Kaynaklar: [Tauri Window API](https://docs.rs/tauri/latest/tauri/window/struct.Window.html), [GetAsyncKeyState](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate), [GetCursorPos](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getcursorpos).

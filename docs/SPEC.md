@@ -4,9 +4,9 @@
 
 ## Amaç ve kabul koşulları
 
-Yerel Windows masaüstü uygulaması. Cursor Models ve Other Models kalan yüzdelerini ayrı gösterir. Antigravity model grupları için haftalık ve beş saatlik limitleri, Gemini 4 Argon dahil dönen diğer grupları kaybetmeden gösterir. Claude oturum, haftalık ve model limitlerini gösterir. Codex plan pencereleri de yer alır; ChatGPT aboneliği API kredisine dönüştürülmez. Bütün pencerelerin kaynak ve ölçüm zamanları görünür. Eksik alan sıfır veya yüzde yüz sayılmaz.
+Yerel Windows masaüstü uygulaması. Cursor Models ve Other Models kalan yüzdelerini ayrı gösterir. Antigravity model grupları için haftalık ve beş saatlik limitleri, Gemini 4 Argon dahil dönen diğer grupları kaybetmeden gösterir. Codex plan pencereleri de yer alır; ChatGPT aboneliği API kredisine dönüştürülmez. Bağımsız Claude kartı ve durum takibi son kullanıcı yönlendirmesiyle kapsamdan çıkarıldı; Antigravity'nin kendi Claude/GPT grubu korunur. Bütün pencerelerin kaynak ve ölçüm zamanları görünür. Eksik alan sıfır veya yüzde yüz sayılmaz.
 
-Giriş veya bağlantı hataları açıklanır. Yerel oturumlar yalnızca okunur, gizli bilgiler arayüze veya loglara gönderilmez. Claude için uygulamaya ait ayrı giriş penceresi kullanılır. Tarayıcı profilleri taranmaz. Oturumlar hesap değişiminde karıştırılmaz. Ağ istekleri zaman aşımına sahiptir. Otomatik yenileme, elle yenileme, görünür bağlantı ayarları gerekir.
+Giriş veya bağlantı hataları açıklanır. Yerel oturumlar yalnızca okunur, gizli bilgiler arayüze veya loglara gönderilmez. Giriş gerektiğinde sağlayıcının kendi uygulamasına yönlendirilir. Tarayıcı profilleri taranmaz. Oturumlar hesap değişiminde karıştırılmaz. Ağ istekleri zaman aşımına sahiptir. Otomatik yenileme, elle yenileme, görünür bağlantı ayarları gerekir.
 
 ## Masaüstü ve yardımcı modüller
 
@@ -18,7 +18,7 @@ Ajanlar için süreç varlığı çalışma durumu kanıtı sayılmaz. Working, 
 
 ## Teknik yaklaşım
 
-Electron 44 + React 19 + TypeScript + Vite. Node SQLite yerel Cursor oturumunu salt okunur açar. Node ana süreç sağlayıcı HTTP isteklerini, Windows süreç/port keşfini ve IPC doğrulamasını sahiplenir. Renderer sandbox içinde çalışır; yalnızca dar preload arayüzünü görür. Electron, PRD'deki önerilen Tauri'nin yerine yerel SQLite ve ayrı web giriş oturumlarını tek çalışma ortamında sağlamak için seçildi.
+Rust + Tauri 2 + React 19 + TypeScript + Vite. `rusqlite` Cursor oturumunu salt okunur açar; `reqwest` HTTP isteklerini sınırlar. Rust çekirdeği kota, süreç/port keşfi, oturumlar, pencere odağı ve dar IPC sözleşmelerini sahiplenir. React yalnızca izin verilen komutlarla konuşur; genel dosya, kabuk veya HTTP yetkisi yoktur. Tauri, Windows WebView2 kullanır. Dağıtımda Electron veya Node yan süreç yoktur. Windows PowerShell yalnızca yerel envanter ve açıkça bağlanan Cursor gözlemcisi için kullanılır.
 
 ## Tasarım
 

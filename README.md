@@ -1,78 +1,61 @@
 # AgentHUD
 
-AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yerel Windows uygulaması.
+Cursor, Antigravity ve Codex için kalan abonelik haklarını tek yerde gösteren **Rust + Tauri 2** Windows uygulaması. React arayüzü Windows WebView2 içinde çalışır.
 
-## Çalıştırma
+## Kullanım
 
-`release/AgentHUD-0.6.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.7.0-Setup.exe` ile kur veya `release/AgentHUD-0.7.0-Windows.exe` dosyasını doğrudan aç. Önceki AgentHUD açıksa tepsi menüsünden Çıkış'ı seç. Uygulama çalışmak için Node veya Electron istemez. Windows WebView2 gerekir; kurulum eksikse yükleyici bunu kurar. Geliştirme paketi imzasızdır; Windows yayıncı uyarısı gösterebilir. Dosya doğrulaması `release/SHA256SUMS.txt` içindedir.
 
-`Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Bu kısayol doluysa `Ctrl + Alt + H`, ardından `Ctrl + Shift + G` denenir. Etkin kısayol ayarlarda görünür. Hiçbiri kullanılamıyorsa hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır ve görünüm değişimlerinde korunur.
+Başlıktaki çubuk düğmesi 48 piksel yüksekliğinde kompakt görünüme geçirir; maskot yüzen paneli açar. Sabitleme düğmesi her zaman üstte kalmayı değiştirir. X tepsiye gizler; tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
-Hayalet modu ayarlardan açılınca küçük çubuğa geçer. Kota alanındaki tıklamalar arkadaki uygulamaya gider; maskot tıklanabilir kalır ve paneli açar. Panel açıkken normal şekilde etkileşirsin; küçültünce tıklama geçişi geri gelir. Çubuğun üzerindeyken Alt basılı tutmak geçici panel açar; bırakınca çubuğa döner. AltGr bu davranışı tetiklemez. Normal görünüme geçmek veya tepsi/kısayolla geri çağırmak hayalet modunu kapatır. Hayalet modu açılışta kendiliğinden etkinleşmez.
+Uygulamayı tekrar açmak ikinci bir kopya başlatmaz; mevcut paneli geri getirir. Ayrı test profilleri bu davranıştan bağımsızdır.
 
-Bu geliştirme paketi bir kod imzalama sertifikasıyla imzalanmamıştır. Windows ilk çalıştırmada yayıncı uyarısı gösterebilir. SHA256 doğrulaması `release/SHA256SUMS.txt` dosyasındadır.
+`Ctrl + Shift + H` paneli geri çağırır ve hayalet modunu kapatır. Doluysa `Ctrl + Alt + H`, ardından `Ctrl + Shift + G` denenir. Etkin kısayol ayarlarda görünür. Hiçbiri kaydedilemezse hayalet modu açılamaz.
+
+Hayalet modunda kota alanının tıklamaları arkadaki uygulamaya gider; maskot tıklanabilir kalır. Maskot paneli açar. Çubuğun üzerindeyken Alt basılı tutmak geçici panel açar; bırakınca çubuğa döner. AltGr tetiklemez. Panel açıkken normal şekilde etkileşirsin. Hayalet modu açılışta kendiliğinden etkinleşmez.
 
 ## Gerçek veri kaynakları
 
-| Araç | Okunan bilgi | Bağlantı |
+| Araç | Gösterilen bilgi | Yerel bağlantı |
 | --- | --- | --- |
-| Cursor | Cursor Models, Other Models, fatura dönemi bitişi | Cursor'ın yerel SQLite oturumu veya uygulamaya ait giriş penceresi |
-| Antigravity | Gemini, Claude/GPT, Argon dahil dönen bütün ölçülebilir model grupları; haftalık ve 5 saatlik pencereler | Açık Antigravity'nin yerel servisi |
-| Claude | 5 saatlik, haftalık, sağlayıcı döndürürse model bazlı haklar | Claude Code yerel OAuth oturumu veya ayrı Claude giriş penceresi |
-| Codex | Hesabın döndürdüğü gerçek plan pencereleri | Codex yerel ChatGPT oturumu |
+| Cursor | Cursor Models, Other Models, fatura dönemi | Cursor'ın salt okunur SQLite oturumu |
+| Antigravity | Dönen bütün ölçülebilir model grupları, haftalık ve 5 saatlik pencereler | Açık Antigravity'nin yerel servisi |
+| Codex | Hesabın döndürdüğü gerçek plan pencereleri | Yerel ChatGPT oturumu |
 
-Bütün yüzdeler **kalan** hakkı gösterir. Eksik limit sıfır veya yüzde yüz sayılmaz. Sağlayıcı bir pencereyi kapatmışsa, sayıyla birlikte açıklanır. Geçici ağ hatasında aynı hesap için önceki ölçüm tarihi korunur ve eski veri olduğu belirtilir. Hesap değişimi veya giriş hatasında eski haklar temizlenir.
+Bağımsız Claude entegrasyonu kullanıcı isteğiyle kaldırıldı. Antigravity'nin kendi yanıtında dönen Claude/GPT grubu Antigravity kartında gösterilir.
 
-Claude hesabı bu bilgisayarda bulunmadığından canlı Claude kotası doğrulanamadı. Bağlanmamış kart doğru şekilde giriş ister; hesap eklendiğinde giriş akışının canlı kabul testi yapılmalıdır. API kullanım bedelleri, ChatGPT abonelik limitleri ve tahmini mesaj sayıları birbirine dönüştürülmez.
+Yüzdeler **kalan** hakkı gösterir. Eksik limit sıfır veya yüzde yüz sayılmaz. Sağlayıcının kapattığı pencere açıklanır. Geçici ağ hatasında aynı hesabın önceki ölçümü, tarihi ve eski veri uyarısıyla korunur. Hesap değişiminde veya giriş hatasında eski ölçümler temizlenir. Abonelik hakkı API kredisine veya tahmini mesaj sayısına dönüştürülmez.
 
-Kimlik bilgileri ana süreçte kalır. Yerel veritabanları ve mevcut kimlik dosyaları değiştirilmez. Oturumlar yalnızca kendi sağlayıcısına yapılan kullanım isteklerinde kullanılır; Antigravity istekleri `127.0.0.1` adresine gider. Uygulama kişisel tarayıcı profillerini taramaz. Yeni web girişleri uygulamanın ayrı profilinde tutulur.
+Giriş gerektiğinde ilgili uygulamada hesabına girip AgentHUD'u yenile. Sağlayıcı oturumları Rust tarafında kalır; arayüze token, çerez veya ham süreç komutu gönderilmez. Mevcut kimlik dosyaları değiştirilmez, kişisel tarayıcı profilleri taranmaz. Antigravity istekleri yalnızca `127.0.0.1` üzerindeki bulunan servise gider. Uzak HTTP istekleri TLS doğrulaması, süre ve yanıt boyutu sınırı kullanır; yönlendirmeler izlenmez.
 
 ## Portlar ve ajanlar
 
-Port yöneticisi geliştirme süreçlerinin TCP LISTEN portlarını, süreç kimliğini ve bulunabilirse IDE üst sürecini gösterir. Tarayıcıda açma ve süreç durdurma bağlıdır. Durdurmadan önce PID'nin aynı sürece ait olduğu yeniden kontrol edilir. Çalıştırma komutu ve proje klasörü çözülebildiğinde yeniden başlatma bilgisi 10 dakika tutulur.
+Yerel portlar ekranı geliştirme süreçlerinin TCP LISTEN portlarını, PID'yi, bulunabilen IDE ilişkisini ve proje adını gösterir. Aç, durdur ve doğrulanmış komut/çalışma klasörü varsa yeniden başlat eylemleri vardır. Durdurmadan önce süreç oluşturulma kimliği tekrar kontrol edilir. Yeniden başlatma bilgisi 10 dakika tutulur. Çalışma klasörü okunamazsa yeniden başlatma kapalıdır; üst sürecin bulunmaması kesin zombi kanıtı olarak sunulmaz.
 
-Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur olarak alınır ve süreç oluşturulma kimliğiyle eşleştirilir. Süreç durdurulmadan hemen önce tekrar okunur. Böylece ortak `node_modules` yolundan farklı bir alt klasörde çalışan sunucu aynı klasörde yeniden başlatılır. Proje adı `package.json` veya `go.mod` dosyasından okunur; Go/Cargo başlatıcılarının alt süreçleri de tanınır. Başlatıcı kapanınca daha önce görülen aynı süreç kimliği korunur. Windows bu bilgiye erişim vermezse veya yerleşim doğrulanamazsa yeniden başlatma kapalı kalır. Script yolu yalnızca proje adı için yardımcı ipucudur. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
+Ajanlar 5 saniyede bir kontrol edilir; uzak kota servisleri bu sıklıkta sorgulanmaz. Antigravity'nin gerçek servis durumları ve Codex'in yerel task olayları kullanılır. CPU etkinliği çalışma veya onay bekleme kanıtı sayılmaz.
 
-Antigravity'nin yerel servisinden gerçek proje klasörü ve oturum durumu okunur: Boşta, Çalışıyor, Meşgul veya Durduruluyor. Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Satırlarda veri kaynağı ve son etkinlik zamanı görünür. Ajanlar 5 saniyede bir kontrol edilir; uzak kota servisleri bu sıklıkta sorgulanmaz.
+Cursor için **Ajanlar > Cursor durum takibi > Bağla** seçeneği isteğe bağlı gözlemciyi açar. Değişecek dosya önce gösterilir. Mevcut kancalar korunur, özgün dosya yedeklenir. Çalışma ve bitiş olayları takip edilir; sohbet metni, düşünce içeriği ve komutlar saklanmaz. Kapatma yalnızca AgentHUD gözlemcisini kaldırır. Ayrıntılar `docs/CURSOR-TRACKING.md` içindedir.
 
-Cursor için **Ajanlar > Cursor durum takibi > Bağla** seçeneğini kullanabilirsin. Değişecek dosya ve saklanacak bilgiler gösterilir; Takibi etkinleştir mevcut kullanıcı kancalarını koruyup özgün dosyayı yedekler. Düşünce/yanıt olayı Çalışıyor, bitiş olayı Tamamlandı olarak görünür. İlk olay gelene kadar bağlantı bekliyor durumundadır. Takibi kapat yalnızca AgentHUD gözlemcisini kaldırır. Bozuk veya bilinmeyen sürümlü ayarlar değiştirilmez. Sohbet içeriği ve komutlar kaydedilmez; izin kancalarına ekleme yapılmaz. Ayrıntı `docs/CURSOR-TRACKING.md` içinde.
+**Odaklan**, oturumun uygulama penceresini açar; birden fazla aday varsa seçim ister. Süreç ve pencere kimliği tekrar doğrulanır, küçültülmüş pencere geri yüklenir. Genel uygulama penceresinde belirli sohbet sekmesinin seçildiği iddia edilmez. Ayrıntılar `docs/WINDOW-FOCUS.md` içindedir.
 
-Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır.
+## Geliştirme
 
-Claude Code için **Ajanlar > Claude Code durum takibi > Bağla** isteğe bağlı olay bağlantısını açar. Çalışma, onay bekleme, araçtan sonra devam ve yanıt bitişi gösterilir. Bu bağlantı kota hesabına giriş yapmaz. Mevcut ayarlar/izinler korunur; bağlantı kapatılınca yalnızca AgentHUD komutları kaldırılır. Gerçek Windows gözlemcisi ve arayüz akışı ayrı profilde örnek olaylarla doğrulandı; canlı Claude oturumu denenmedi. Hesap olmadığı için Claude kotası giriş gerekli durumundadır. Ayrıntı `docs/CLAUDE-TRACKING.md` içinde.
-
-CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Cursor ve Antigravity için ayrı onay bekleme kaynağı hâlâ bulunmadı; bu durumlar uydurulmaz. Herdr entegrasyonu henüz yoktur.
-
-**Odaklan**, başlıktaki çalışma alanı adı tek bir pencereyle eşleşiyorsa onu açar. Birden fazla eşleşme veya belirsiz pencere varsa seçim listesi gösterir. Tek uygulama penceresi doğrudan açılır; genel bir ajan penceresinde sohbet sekmesinin de seçildiği iddia edilmez. Küçültülmüş pencere geri yüklenir, HUD küçük çubuğa döner. Kapanan veya değişen seçim reddedilir; liste yenilenebilir. Pencere başlığı tam proje yolu kanıtı değildir. Ayrıntı `docs/WINDOW-FOCUS.md` içinde.
-
-## Geliştirme ve kontroller
-
-Node 24 ve pnpm gerekir. Bağımlılıkları `pnpm install` ile kur; Electron çalışma dosyası yoksa `node node_modules/electron/install.js` çalıştır.
+Windows, Rust MSVC araç zinciri, Visual Studio C++ Build Tools, WebView2, Node ve pnpm gerekir. Node yalnızca geliştirme ve arayüz derlemesinde kullanılır.
 
 ```powershell
-pnpm build
+pnpm install
 pnpm desktop
+pnpm build
 pnpm test
+pnpm exec tauri build --debug --no-bundle
+cargo build --manifest-path src-tauri/Cargo.toml --example focus_fixture
 pnpm test:ui
-pnpm test:ports
-pnpm test:ghost
-pnpm test:cursor
-pnpm test:claude
-pnpm test:focus
 pnpm live-check
 pnpm package
 ```
 
-`pnpm dev` sadece tarayıcıdaki arayüz önizlemesini açar. Tarayıcı önizlemesi gerçekmiş gibi örnek kota göstermez; yerel bağlantılar masaüstü uygulamasındadır.
+`pnpm dev` tarayıcı önizlemesidir; örnek veriyle gerçekmiş gibi kota göstermez. `pnpm test` Rust testlerini ve Windows'ta kendi süreçleriyle port/gözlemci denemelerini çalıştırır. `test:ui` gerçek Tauri WebView2 penceresinde geçici profil kullanır; canlı kotalar, Cursor olayları, kendi iki test penceresinde odaklanma ve pencere davranışlarını kontrol eder. Bu kontroller süreç bilgisine ve ağa erişim gerektirir; kullanıcının sunucularını durdurmaz veya gerçek IDE ayarlarını değiştirmez.
 
-`test:cursor`, gerçek PowerShell gözlemcisini resmî biçimdeki örnek olaylarla ayrı bir Cursor klasöründe çalıştırır; çalışma/bitiş, bağlantıyı kaldırma ve hatalı yapılandırma akışlarını arayüzde kontrol eder. `AGENTHUD_CURSOR_DIRECTORY` yalnızca bu testlerin veya alternatif yerel profilin hedefini belirler; varsayılan kullanıcının `.cursor` klasörüdür.
+`AGENTHUD_PROFILE_DIR` ayrı uygulama profili, `AGENTHUD_CURSOR_DIRECTORY` ayrı Cursor gözlemci klasörü içindir. Yalnızca açıkça ayrı profil seçilmişken `AGENTHUD_DEBUG_PORT` test WebView2 bağlantısını açabilir. Normal çalışmada bu bağlantı açılmaz.
 
-`test:focus`, ayrı bir süreçteki iki test penceresinde gerçek Windows ön plan sonucunu okur. Kullanıcının IDE pencerelerine odaklanmaz. Başlık eşleşmesi, seçim, küçültülmüş pencereyi geri getirme, kapanan pencereyi reddetme ve dar seçim diyaloğu kapsanır.
-
-`test:ui` gerçek Electron penceresini açar, canlı ölçümlerin tamamlanmasını bekler ve arayüzü tıklar. `test:ports` kendi geçici sunucusunu açar, durdurur ve yeniden başlatır; mevcut sunuculara dokunmaz. `test:ghost`, ayrı profilinde pencerenin gerçek Windows tıklama geçişi bayrağını ve maskot istisnasını kontrol eder. Fiziksel klavyede Alt basılı tutma bu otomatik kontrolün kapsamı değildir. Canlı kontroller Windows süreçlerine ve ağa erişim gerektirir. Görüntüler ve test çıktıları `.cache/` altında tutulur, Git'e eklenmez.
-
-## Kaynaklar ve kapsam
-
-Kullanıcı tarafından verilen Gemini PRD'sinin yorumu ve kabul koşulları `docs/SPEC.md` dosyasındadır. Uygulama Electron + React ile hazırlanmıştır; PRD'deki önerilen Tauri yerine yerel SQLite ve ayrı web giriş oturumlarını aynı ortamda sunmak için bu tercih yapılmıştır.
-
-Sağlayıcı erişim yolları [CodexBar'ın Cursor](https://github.com/steipete/CodexBar/blob/main/docs/cursor.md), [Antigravity](https://github.com/steipete/CodexBar/blob/main/docs/antigravity.md) ve [Claude](https://github.com/steipete/CodexBar/blob/main/docs/claude.md) kaynak notlarıyla karşılaştırıldı. Bunlar sağlayıcıların garanti ettiği herkese açık API sözleşmeleri değildir; ileride değişebilirler.
+Mimari ve kapsam `docs/SPEC.md`, son kanıtlar `docs/VERIFICATION.md`, kabul sınırları `docs/ACCEPTANCE.md` içindedir. Electron 0.6.0 geçmişi Git'te `091173b` ve eski sürüm dosyalarında korunur. Sağlayıcı erişim yolları herkese açık, garantili API sözleşmeleri değildir; sağlayıcı güncellemelerinde değişebilir.
