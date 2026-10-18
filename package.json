@@ -1,6 +1,6 @@
 {
   "name": "agenthud",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "description": "AI araçlarının kullanım hakları için yerel masaüstü paneli",
   "type": "module",
@@ -8,13 +8,14 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "desktop": "node scripts/start-desktop.mjs",
-    "build": "tsc -b && vite build",
+    "build": "node --check electron/main.mjs && tsc -b && vite build",
     "test": "node --test tests/*.test.mjs",
     "package": "pnpm build && electron-builder --win portable",
     "live-check": "node scripts/live-check.mjs",
     "test:ui": "node scripts/verify-ui.mjs",
     "test:ports": "node scripts/verify-ports.mjs",
-    "test:ghost": "node scripts/verify-ghost.mjs"
+    "test:ghost": "node scripts/verify-ghost.mjs",
+    "test:cursor": "node scripts/verify-cursor.mjs"
   },
   "dependencies": {
     "koffi": "3.3.3",

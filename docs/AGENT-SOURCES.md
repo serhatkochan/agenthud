@@ -24,4 +24,8 @@ Resmi [Antigravity hooks belgesi](https://antigravity.google/docs/hooks), `Sessi
 
 Resmi [Cursor hooks belgesinde](https://cursor.com/docs/hooks) `conversation_id`, `generation_id`, `workspace_roots` ve `hook_event_name` ortak alanları doğrulandı. `beforeSubmitPrompt`, `stop`, `sessionStart`, `sessionEnd` gibi yaşam döngüsü olayları var. Çalışma ve bitiş takibi için uygun; onay bekleme olayının ayrı ve güvenilir kaynağı henüz bulunmadı.
 
-Hook kurulumunda mevcut yapılandırma korunmalı, yapılacak değişiklik arayüzde açıklanmalı ve bir izleme hook'u hiçbir komutu kendiliğinden onaylamamalıdır. Henüz kullanıcı profilindeki hook yapılandırmaları değiştirilmedi.
+0.4.0'da `electron/cursor-tracking.mjs` ve Windows PowerShell gözlemcisi bu bağlantıyı sağlıyor. Ajanlar ekranındaki kullanıcı eylemiyle etkinleşir. Yalnızca sessionStart, afterAgentThought, afterAgentResponse, stop ve sessionEnd izlenir. İzin kancalarına eklenmez; boş JSON çıktısı komut onayı veya takip görevi üretmez. Düşünce/yanıt metni alınsa bile yalnızca olay türü, proje, oturum/tur kimliği ve zaman diske yazılır.
+
+Yapılandırma değişimi özgün baytları yedekler; geçersiz UTF-8/JSON ve bilinmeyen sürüm değiştirilmez. Kaldırma yalnızca doğru veri klasörüne sahip AgentHUD v1 gözlemcilerini hedefler. Geç gelen bitiş ve yeni tur olayları ayrı değerlendirilir.
+
+Gerçek Windows gözlemcisi ve arayüz bağlantısı, resmî biçimdeki örnek olaylarla geçici Cursor profillerinde doğrulandı. Çalışma ve bitiş satırları 5 saniyelik taramayla göründü; kaldırma ve bozuk ayarı koruma sınandı. Kullanıcının asıl `.cursor/hooks.json` dosyası hâlâ yok; kullanıcı profilindeki hook yapılandırmaları değiştirilmedi. Gerçek IDE'den olay alma kabulü, kullanıcı bağlantıyı etkinleştirdikten sonra yapılmalı. Ayrıntı `CURSOR-TRACKING.md` içinde.

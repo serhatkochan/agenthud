@@ -4,7 +4,7 @@ AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yere
 
 ## Çalıştırma
 
-`release/AgentHUD-0.3.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.4.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
 `Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Bu kısayol doluysa `Ctrl + Alt + H`, ardından `Ctrl + Shift + G` denenir. Etkin kısayol ayarlarda görünür. Hiçbiri kullanılamıyorsa hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır ve görünüm değişimlerinde korunur.
 
@@ -35,7 +35,9 @@ Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur o
 
 Antigravity'nin yerel servisinden gerçek proje klasörü ve oturum durumu okunur: Boşta, Çalışıyor, Meşgul veya Durduruluyor. Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Satırlarda veri kaynağı ve son etkinlik zamanı görünür. Ajanlar 5 saniyede bir kontrol edilir; uzak kota servisleri bu sıklıkta sorgulanmaz.
 
-Cursor ve Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir; CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için güvenilir Working / Blocked / Done / Idle takibi ve oturumun tam penceresine odaklanma sonraki geliştirme işidir. Odaklan düğmesi şu anda uygulama penceresini açar. Herdr entegrasyonu henüz yoktur.
+Cursor için **Ajanlar > Cursor durum takibi > Bağla** seçeneğini kullanabilirsin. Değişecek dosya ve saklanacak bilgiler gösterilir; Takibi etkinleştir mevcut kullanıcı kancalarını koruyup özgün dosyayı yedekler. Düşünce/yanıt olayı Çalışıyor, bitiş olayı Tamamlandı olarak görünür. İlk olay gelene kadar bağlantı bekliyor durumundadır. Takibi kapat yalnızca AgentHUD gözlemcisini kaldırır. Bozuk veya bilinmeyen sürümlü ayarlar değiştirilmez. Sohbet içeriği ve komutlar kaydedilmez; izin kancalarına ekleme yapılmaz. Ayrıntı `docs/CURSOR-TRACKING.md` içinde.
+
+Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır. Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir. CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için onay bekleme takibi ve oturumun tam penceresine odaklanma açık işlerdir. Odaklan düğmesi şu anda uygulama penceresini açar. Herdr entegrasyonu henüz yoktur.
 
 ## Geliştirme ve kontroller
 
@@ -48,11 +50,14 @@ pnpm test
 pnpm test:ui
 pnpm test:ports
 pnpm test:ghost
+pnpm test:cursor
 pnpm live-check
 pnpm package
 ```
 
 `pnpm dev` sadece tarayıcıdaki arayüz önizlemesini açar. Tarayıcı önizlemesi gerçekmiş gibi örnek kota göstermez; yerel bağlantılar masaüstü uygulamasındadır.
+
+`test:cursor`, gerçek PowerShell gözlemcisini resmî biçimdeki örnek olaylarla ayrı bir Cursor klasöründe çalıştırır; çalışma/bitiş, bağlantıyı kaldırma ve hatalı yapılandırma akışlarını arayüzde kontrol eder. `AGENTHUD_CURSOR_DIRECTORY` yalnızca bu testlerin veya alternatif yerel profilin hedefini belirler; varsayılan kullanıcının `.cursor` klasörüdür.
 
 `test:ui` gerçek Electron penceresini açar, canlı ölçümlerin tamamlanmasını bekler ve arayüzü tıklar. `test:ports` kendi geçici sunucusunu açar, durdurur ve yeniden başlatır; mevcut sunuculara dokunmaz. `test:ghost`, ayrı profilinde pencerenin gerçek Windows tıklama geçişi bayrağını ve maskot istisnasını kontrol eder. Fiziksel klavyede Alt basılı tutma bu otomatik kontrolün kapsamı değildir. Canlı kontroller Windows süreçlerine ve ağa erişim gerektirir. Görüntüler ve test çıktıları `.cache/` altında tutulur, Git'e eklenmez.
 

@@ -1,5 +1,12 @@
 # Değişiklikler
 
+## 0.4.0 · 18 Ekim 2026
+
+- Ajanlar ekranına Cursor durum takibi bağlantısı eklendi. Kullanıcı etkinleştirdiğinde resmî oturum olaylarından proje, çalışma ve bitiş durumu gösterilir.
+- Mevcut Cursor kancaları korunur, özgün dosya yedeklenir. Bağlantıyı kapatmak yalnızca AgentHUD gözlemcisini kaldırır; bozuk ayarlar değiştirilmez.
+- Gözlemci sohbet metni, düşünce içeriği ve komut saklamaz; komut izinlerini ve otomatik devam davranışını değiştirmez.
+- Derleme kontrolüne Electron ana sürecinin sözdizimi denetimi eklendi.
+
 ## 0.3.0 · 18 Ekim 2026
 
 - Hayalet modunda kota alanı tıklamaları arkaya geçirirken maskot tıklanabilir kalır. Maskot paneli açar; panel küçültülünce hayalet modu sürer.

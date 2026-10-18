@@ -80,6 +80,7 @@ export async function readSessions(
   {
     codexHome = process.env.CODEX_HOME ||
       join(process.env.USERPROFILE, ".codex"),
+    cursorSessions = [],
   } = {},
 ) {
   const [antigravity, files] = await Promise.all([
@@ -93,7 +94,7 @@ export async function readSessions(
       0,
     ),
   ]);
-  const result = [...antigravity];
+  const result = [...antigravity, ...cursorSessions];
   const observedAt = Date.now();
   for (const file of files) {
     if (Date.now() - file.time > 24 * 3600000) continue;

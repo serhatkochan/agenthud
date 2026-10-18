@@ -21,6 +21,7 @@ import { PortManager } from "./ports.mjs";
 import { readSessions, focusProvider } from "./sessions.mjs";
 import { GhostMode, registerRecoveryShortcut } from "./ghost.mjs";
 import { loadAltReader } from "./windows-input.mjs";
+import { CursorTracker } from "./cursor-tracking.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 let win,
@@ -30,6 +31,7 @@ let win,
   sessionRefresh,
   ghost,
   ghostTimer,
+  cursorTracker,
   refreshing,
   quitting = false;
 const loginWindows = new Map();
@@ -48,6 +50,7 @@ let state = {
   sessions: [],
   sessionsUpdatedAt: null,
   sessionsError: null,
+  cursorTracking: { enabled: false, status: "loading", configPath: "" },
   settings,
   mode: "dashboard",
   refreshing: false,
@@ -82,10 +85,14 @@ const getProvider = (id) => {
 async function refreshSessions(system) {
   if (sessionRefresh) return sessionRefresh;
   sessionRefresh = (async () => {
-    const current =
-      system ||
-      (await inventory({ workingDirectories: false, agentsOnly: true }));
-    state.sessions = await readSessions(current);
+    const [current, cursor] = await Promise.all([
+      system || inventory({ workingDirectories: false, agentsOnly: true }),
+      cursorTracker.readSessions(),
+    ]);
+    state.cursorTracking = cursor.connection;
+    state.sessions = await readSessions(current, {
+      cursorSessions: cursor.sessions,
+    });
     state.sessionsUpdatedAt = Date.now();
     state.sessionsError = null;
   })()
@@ -321,6 +328,12 @@ async function createWindow() {
     };
   } catch {}
   settings.clickThrough = false;
+  cursorTracker = new CursorTracker({
+    directory:
+      process.env.AGENTHUD_CURSOR_DIRECTORY ||
+      join(app.getPath("home"), ".cursor"),
+  });
+  state.cursorTracking = await cursorTracker.status();
   win = new BrowserWindow({
     width: 1120,
     height: 940,
@@ -491,6 +504,24 @@ handle("hud:window", (action) => {
 handle("hud:hotspot", (rectangle) => {
   ghost.setHotspot(rectangle);
   return { ok: true };
+});
+handle("hud:tracking", async (provider, enabled) => {
+  if (provider !== "cursor" || typeof enabled !== "boolean")
+    return { ok: false, message: "Geçersiz takip ayarı." };
+  try {
+    await cursorTracker.setEnabled(enabled);
+    await refreshSessions();
+    return { ok: true };
+  } catch (error) {
+    state.cursorTracking = await cursorTracker.status();
+    notify();
+    return {
+      ok: false,
+      message: error.message?.startsWith("Cursor")
+        ? error.message
+        : "Takip ayarı kaydedilemedi. Mevcut ayarlar korundu.",
+    };
+  }
 });
 handle("hud:focus", async (provider) => {
   getProvider(provider);

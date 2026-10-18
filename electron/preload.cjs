@@ -9,6 +9,8 @@ contextBridge.exposeInMainWorld("agenthud", {
   port: (action, key) => ipcRenderer.invoke("hud:port", action, key),
   focus: (provider) => ipcRenderer.invoke("hud:focus", provider),
   hotspot: (rectangle) => ipcRenderer.invoke("hud:hotspot", rectangle),
+  tracking: (provider, enabled) =>
+    ipcRenderer.invoke("hud:tracking", provider, enabled),
   onUpdate: (fn) => {
     const listener = (_event, value) => fn(value);
     ipcRenderer.on("hud:update", listener);

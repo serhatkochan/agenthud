@@ -15,6 +15,11 @@ await writeFile(
 );
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
+env.AGENTHUD_CURSOR_DIRECTORY = join(
+  process.cwd(),
+  ".cache",
+  "ghost-cursor-profile",
+);
 const application = await electron.launch({
   executablePath:
     process.argv[2] ||

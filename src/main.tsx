@@ -12,6 +12,7 @@ import type {
   Result,
 } from "./types";
 import "./styles.css";
+import { CursorTracking } from "./CursorTracking";
 
 const pretty = (v: number) =>
   new Intl.NumberFormat("tr-TR", {
@@ -415,7 +416,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.3</span>
+              AgentHUD <span className="version">/ 0.4</span>
             </div>
             <div className="window-actions">
               <button
@@ -686,6 +687,11 @@ function App() {
                 </>
               ) : tab === "agents" ? (
                 <section className="list-surface">
+                  <CursorTracking
+                    connection={s.cursorTracking}
+                    disabled={!isDesktop}
+                    onChange={(enabled) => bridge.tracking("cursor", enabled)}
+                  />
                   {s.sessions.length ? (
                     s.sessions.map((a) => (
                       <div

@@ -1060,6 +1060,63 @@ body:has(.mode-compact) {
 .agent-state.done {
   color: #a8b6ff;
 }
+.tracking-connection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  background: #202a23;
+}
+.tracking-description {
+  flex: 1;
+  min-width: 0;
+}
+.tracking-description strong {
+  font-size: 12px;
+  font-weight: 550;
+}
+.tracking-description p,
+.tracking-facts p {
+  font-size: 11px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 5px 0;
+}
+.tracking-status {
+  display: inline-block;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.tracking-status.active {
+  color: var(--mint);
+}
+.tracking-status.error {
+  color: var(--amber);
+}
+.tracking-file {
+  font-size: 11px;
+  margin: 18px 0;
+  color: var(--muted);
+}
+.tracking-file summary {
+  cursor: pointer;
+  padding: 6px 0;
+}
+.tracking-file code {
+  display: block;
+  padding: 10px;
+  background: #111612;
+  border-radius: 6px;
+  word-break: break-all;
+  line-height: 1.7;
+  user-select: text;
+}
+.tracking-facts {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
 .subtle-button {
   display: inline-flex;
   align-items: center;

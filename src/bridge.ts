@@ -21,6 +21,7 @@ const preview: Snapshot = {
   mode: "dashboard",
   refreshing: false,
   shortcutAvailable: false,
+  cursorTracking: { enabled: false, status: "off", configPath: "" },
   settings: {
     alwaysOnTop: false,
     refreshSeconds: 60,
@@ -47,5 +48,6 @@ export const bridge: Bridge = window.agenthud ?? {
   port: unavailable,
   focus: unavailable,
   hotspot: unavailable,
+  tracking: unavailable,
   onUpdate: () => () => {},
 };

@@ -16,6 +16,11 @@ await writeFile(
 );
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
+env.AGENTHUD_CURSOR_DIRECTORY = join(
+  process.cwd(),
+  ".cache",
+  "ui-cursor-profile",
+);
 const application = await electron.launch({
   args: [
     ...(process.argv[2] ? [] : ["."]),
@@ -189,6 +194,7 @@ try {
     .getByRole("button", { name: "Kompakt görünüm", exact: true })
     .click();
   await page.getByRole("button", { name: "Paneli genişlet" }).waitFor();
+  await page.waitForFunction(() => innerHeight === 48);
   await page.screenshot({ path: ".cache/compact.png" });
   assert.equal(await page.evaluate(() => innerHeight), 48);
   await page.getByRole("button", { name: "Paneli genişlet" }).click();

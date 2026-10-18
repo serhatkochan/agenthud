@@ -50,6 +50,13 @@ export interface Settings {
   clickThrough: boolean;
   launchCompact: boolean;
 }
+export interface TrackingConnection {
+  enabled: boolean;
+  status: "loading" | "off" | "waiting" | "active" | "error";
+  configPath: string;
+  message?: string;
+  lastEventAt?: number;
+}
 export interface Snapshot {
   providers: Provider[];
   ports: Port[];
@@ -66,6 +73,7 @@ export interface Snapshot {
   ghostAvailable?: boolean;
   ghostPeeking?: boolean;
   ghostError?: string;
+  cursorTracking: TrackingConnection;
 }
 export interface Result {
   ok?: boolean;
@@ -80,6 +88,7 @@ export interface Bridge {
   window(action: string): Promise<Snapshot>;
   port(action: string, key: string): Promise<Result>;
   focus(id: ProviderId): Promise<Result>;
+  tracking(provider: "cursor", enabled: boolean): Promise<Result>;
   hotspot(
     rectangle: { x: number; y: number; width: number; height: number } | null,
   ): Promise<Result>;
