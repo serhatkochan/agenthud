@@ -4,20 +4,11 @@ import { spawn, execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createServer } from "node:net";
 import { randomUUID } from "node:crypto";
-import {
-  mkdir,
-  mkdtemp,
-  writeFile,
-  readFile,
-  copyFile,
-} from "node:fs/promises";
+import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import { resolve, join } from "node:path";
-import { emitCursorFixture } from "./fixtures/cursor.mjs";
 
 await mkdir(".cache", { recursive: true });
 const profile = await mkdtemp(join(process.cwd(), ".cache", "tauri-ui-"));
-const cursor = join(profile, "cursor");
-await mkdir(cursor);
 await writeFile(
   join(profile, "settings.json"),
   JSON.stringify({
@@ -26,11 +17,6 @@ await writeFile(
     notifications: false,
   }),
 );
-const original = {
-  version: 1,
-  hooks: { preToolUse: [{ command: "existing-fixture-gate" }] },
-};
-await writeFile(join(cursor, "hooks.json"), JSON.stringify(original));
 const freePort = async () => {
   const server = createServer();
   await new Promise((r) => server.listen(0, "127.0.0.1", r));
@@ -47,7 +33,6 @@ const app = spawn(
     env: {
       ...process.env,
       AGENTHUD_PROFILE_DIR: profile,
-      AGENTHUD_CURSOR_DIRECTORY: cursor,
       AGENTHUD_DEBUG_PORT: String(port),
       WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS: `--remote-debugging-port=${port}`,
     },
@@ -120,6 +105,28 @@ try {
     false,
   );
   assert.equal(await page.locator(".provider-card").count(), 3);
+  assert.equal(
+    await page
+      .getByRole("navigation", { name: "Ana gezinme" })
+      .getByRole("button")
+      .count(),
+    2,
+  );
+  assert.equal(
+    await page.getByRole("button", { name: "Ajanlar", exact: true }).count(),
+    0,
+  );
+  for (const field of [
+    "sessions",
+    "cursorTracking",
+    "sessionsUpdatedAt",
+    "sessionsError",
+  ])
+    assert.equal(field in initial, false, `Removed field: ${field}`);
+  const api = await page.evaluate(() => Object.keys(window.agenthud));
+  assert.equal(api.includes("focus"), false);
+  assert.equal(api.includes("tracking"), false);
+  assert.equal(api.includes("setTracking"), false);
   assert.deepEqual(
     initial.providers.map((p) => p.status),
     ["connected", "connected", "connected"],
@@ -140,7 +147,6 @@ try {
       env: {
         ...process.env,
         AGENTHUD_PROFILE_DIR: profile,
-        AGENTHUD_CURSOR_DIRECTORY: cursor,
       },
       stdio: "ignore",
     },
@@ -162,141 +168,6 @@ try {
   );
   await page.evaluate(() => window.agenthud.window("dashboard"));
   console.log("Single-instance relaunch recovery passed.");
-  await page.getByRole("button", { name: "Ajanlar", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Cursor durum takibini bağla", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Takibi etkinleştir", exact: true })
-    .click();
-  await page
-    .locator('[data-tracking-status="waiting"]')
-    .waitFor({ timeout: 16000 });
-  const config = JSON.parse(await readFile(join(cursor, "hooks.json"), "utf8"));
-  assert.deepEqual(config.hooks.preToolUse, original.hooks.preToolUse);
-  const command = config.hooks.afterAgentThought.at(-1).command;
-  const event = {
-    hook_event_name: "afterAgentThought",
-    conversation_id: "tauri-ui-fixture",
-    generation_id: "turn-1",
-    workspace_roots: ["C:\\ex\\Tauri UI fixture"],
-    text: "PRIVATE FIXTURE",
-  };
-  assert.equal((await emitCursorFixture(command, event)).stdout, "{}");
-  await page.waitForFunction(
-    async () =>
-      (await window.agenthud.snapshot()).sessions.some(
-        (row) =>
-          row.id === "cursor:tauri-ui-fixture" && row.state === "working",
-      ),
-    null,
-    { timeout: 18000 },
-  );
-  const row = page
-    .locator('.session-row[data-provider="cursor"]')
-    .filter({ has: page.getByText("Tauri UI fixture", { exact: true }) });
-  await row
-    .locator(".agent-state")
-    .filter({ hasText: "Çalışıyor" })
-    .waitFor({ timeout: 18000 });
-  assert.equal(await row.locator(".agent-state").textContent(), "Çalışıyor");
-  await emitCursorFixture(command, {
-    ...event,
-    hook_event_name: "stop",
-    status: "completed",
-  });
-  await page.waitForFunction(
-    async () =>
-      (await window.agenthud.snapshot()).sessions.some(
-        (row) => row.id === "cursor:tauri-ui-fixture" && row.state === "done",
-      ),
-    null,
-    { timeout: 18000 },
-  );
-  await row.locator(".agent-state").filter({ hasText: "Tamamlandı" }).waitFor();
-  await page.screenshot({ path: ".cache/tauri-agents.png" });
-  console.log("Cursor observer lifecycle passed.");
-  const fixtureExe = join(profile, "Cursor.exe");
-  await copyFile(
-    resolve("src-tauri/target/debug/examples/focus_fixture.exe"),
-    fixtureExe,
-  );
-  const startFixture = async (title, minimized = false) => {
-    const child = spawn(
-      fixtureExe,
-      [title, ...(minimized ? ["--minimized"] : []), "--lifetime-ms=90000"],
-      { windowsHide: true, stdio: ["ignore", "pipe", "pipe"] },
-    );
-    fixtures.push(child);
-    return await new Promise((resolve, reject) => {
-      const timer = setTimeout(
-        () => reject(new Error("Owned fixture did not start")),
-        10000,
-      );
-      child.once("error", reject);
-      child.stdout.once("data", (b) => {
-        clearTimeout(timer);
-        resolve(JSON.parse(b.toString()));
-      });
-    });
-  };
-  const titleA = "main.rs - Tauri UI fixture - Cursor";
-  const titleB = "lib.rs - Tauri UI fixture - Cursor";
-  const target = await startFixture(titleA, true);
-  const second = await startFixture(titleB);
-  await page.evaluate(() => window.agenthud.window("show"));
-  await page.evaluate(() => window.agenthud.window("dashboard"));
-  await row
-    .getByRole("button", {
-      name: "Tauri UI fixture penceresine odaklan",
-      exact: true,
-    })
-    .click();
-  await page
-    .getByRole("heading", { name: "Hangi pencereyi açalım?", exact: true })
-    .waitFor();
-  assert.equal(await page.locator(".focus-choice").count(), 2);
-  await page.screenshot({ path: ".cache/tauri-focus-choices.png" });
-  await page
-    .getByRole("button", { name: `${titleA} penceresini aç`, exact: true })
-    .click();
-  await page
-    .getByRole("heading", { name: "Hangi pencereyi açalım?", exact: true })
-    .waitFor({ state: "hidden" });
-  const { stdout: focusState } = await exec(
-    "powershell.exe",
-    [
-      "-NoLogo",
-      "-NoProfile",
-      "-File",
-      resolve("scripts/tauri-window.ps1"),
-      "-ProcessId",
-      String(target.pid),
-      "-WindowHandle",
-      target.handle,
-    ],
-    { windowsHide: true, timeout: 10000 },
-  );
-  assert.equal(JSON.parse(focusState).foreground, true);
-  assert.equal(JSON.parse(focusState).minimized, false);
-  assert.equal(
-    (await page.evaluate(() => window.agenthud.snapshot())).mode,
-    "compact",
-  );
-  console.log("Owned native focus selection and restore passed.");
-  await page.evaluate(() => window.agenthud.window("show"));
-  await page.evaluate(() => window.agenthud.window("dashboard"));
-  await page
-    .getByRole("button", { name: "Cursor durum takibini kapat", exact: true })
-    .click();
-  await page
-    .getByRole("dialog")
-    .getByRole("button", { name: "Takibi kapat", exact: true })
-    .click();
-  await page
-    .locator('[data-tracking-status="off"]')
-    .waitFor({ timeout: 16000 });
   await page
     .getByRole("button", { name: "Yerel portlar", exact: true })
     .click();
@@ -460,11 +331,9 @@ try {
           "three-live-providers",
           "single-instance-relaunch-recovery",
           "no-standalone-claude",
-          "Cursor-observer-neutral-metadata",
-          "Cursor-working-done-disable",
-          "owned-native-focus-selection-restore",
+          "no-agent-monitoring",
           "own-TCP-server-UI-stop-restart-cwd",
-          "three-navigation-tabs",
+          "two-navigation-tabs",
           "compact48",
           "panel420",
           "no-horizontal-overflow",

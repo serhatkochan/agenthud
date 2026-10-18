@@ -1,46 +1,43 @@
-# AgentHUD 0.7.0 · Rust + Tauri kontrol kaydı
+# AgentHUD 0.8.0 · Doğrulama
 
-18 Ekim 2026. Bu kayıt güncel Rust + Tauri sürümüne aittir. Eski Electron paketleri ve rapor arşivi çalışma klasöründen kaldırıldı; geçmişleri Git'te bulunabilir.
+18 Ekim 2026. Güncel kapsam yalnızca Kota radarı ve Yerel portlar. Ajan takibi ve bağımsız Claude entegrasyonu kullanıcının açık isteğiyle çıkarıldı.
 
-## Kaynak ve test
+## Güncel kaynak ve test
 
-- `cargo test --manifest-path src-tauri/Cargo.toml`: **63 başarılı, 0 başarısız, 1 isteğe bağlı etkileşimli test atlandı**. Gerçek ön plan denemesi genel testte Windows odağını değiştirmemek için atlanır; ayrı WebView2 akışında kendi iki test penceresiyle ayrıca çalıştırıldı.
-- Testler gerçek Cursor SQLite dosyasını değiştirmeden okuma, hesap kimliği, sıfır/eksik kotalar, eski veri, zaman aşımı, yönlendirme, yarım/4 MiB üstü HTTP yanıtı, port PID/oluşturulma kimliği, pencere kimliği, olay sırası ve DPI/ekran sınırlarını kapsar.
-- Windows yerel testinde kendi PowerShell TCP sunucusu keşfedildi. Yanlış oluşturulma kimliği durdurmayı reddetti ve sunucu açık kaldı. Doğru süreç durdurulup aynı komut, Unicode/apostrof içeren gerçek çalışma klasörü ve Windows argümanlarıyla tekrar başlatıldı. Kullanıcının sunucuları durdurulmadı.
-- Gerçek Windows Cursor gözlemcisi geçici profilde nötr `{}` döndürdü; yalnızca yaşam döngüsü bilgisi kaydetti. Mevcut kancaları ve özgün dosya yedeğini koruma, bozuk ayarı reddetme ve yalnızca kendi gözlemcisini kaldırma testleri geçti.
-- TypeScript + Vite üretim derlemesi geçti. Aktif `package.json`, kilit dosyası ve uygulama ağacında Electron/Koffi bağımlılığı yoktur.
-- Bağımsız son incelemenin tek önemli bulgusu tek örnek korumasıydı. İkinci açılış regresyonu gerçek eski EXE'de önce başarısız oldu; resmî Tauri eklentisi ilk sıraya eklendikten sonra ikinci süreç 0 ile çıkıp gizli mevcut paneli geri getirdi. İncelemeci dar düzeltmede engel bulmadı.
+- `cargo test --manifest-path src-tauri/Cargo.toml`: **38 başarılı, 0 başarısız, 0 atlanan**. Derleme uyarısı yok.
+- Ajan alanlarını içermeyen snapshot testi önce eski uygulamada `Removed agent field: sessions` ile başarısız oldu; kaldırma sonrası geçti.
+- Oturum okuyucuları, Cursor gözlemcisi, pencereye odaklanma modülü, bunların IPC komutları, Antigravity trajectory isteği ve beş saniyelik tarama döngüsü silindi. İlgili React bileşenleri, stiller, test yardımcıları ve belgeler kaldırıldı.
+- Cursor gözlemcisi silinmeden önce eski `CursorTracker::set_enabled(false)` ile kaldırıldı. Mevcut kancalar korunarak yedek alındı. Gerçek `~/.cursor/hooks.json` kontrolünde **AgentHUD gözlemci komutu 0**; dosyadaki diğer olay alanları korundu. Gizli komutlar rapora yazılmadı.
+- Güncel Windows testinde yalnızca kendi TCP sunucusu kullanıldı: yanlış süreç oluşturulma kimliği durdurmayı reddetti; doğru kimlikle durdurma ve aynı komut/argüman/Unicode-apostrof çalışma klasörüyle yeniden başlatma geçti. Kullanıcının sunucularına dokunulmadı.
+- Kota testleri bağımsız havuzlar, sıfır/eksik/geçersiz limitler, tüm model grupları, kapatılmış pencereler, hesap değişimi, eski ölçüm, HTTP süre/boyut sınırı ve yönlendirmeyi kapsar. Cursor SQLite verisi salt okunur açılır.
 
-## Gerçek masaüstü
+## Güncel arayüz
 
-`scripts/verify-tauri.mjs` uygulamanın kendi WebView2 penceresine ayrı test profili üzerinden bağlanır. `scripts/tauri-window.ps1`, yalnızca testin sahip olduğu PID ve doğrulanan HWND için Windows pencere bayraklarını okur; yeniden boyutlandırma dar ekran kontrolü içindir. Renderer'a HWND verilmez.
+`pnpm test:preview` üretim arayüzünü ayrı, görünmeyen Edge tarayıcısında çalıştırdı:
 
-Geliştirme EXE'sinde geçen kontroller:
+- Yalnızca iki gezinme sekmesi; üç sağlayıcı kartı. Ajanlar ve bağımsız Claude kartı yok.
+- Kota önizlemesi gerçek olmayan sayı üretmez; portların boş durumu açıklanır.
+- Ayar seçimi, Escape ile kapatma, kompakt çubuk ve yüzen panel geçişleri geçti.
+- 1120, 420 ve 380 pikselde yatay taşma yok. Ayarlar dar görünümde de taşmıyor.
+- Renderer sayfa hatası yok. Ekran görüntüleri ve sonuç `.cache/preview-*` dosyalarında yeniden üretilebilir; kişisel veriler içerebilecek test çıktıları Git dışında tutulur.
 
-- Gerçek oturumlarla **Cursor: 2, Antigravity: 5, Codex: 1** kota ölçümü. Bağımsız Claude sağlayıcısı yok; üç kart ve üç gezinme sekmesi.
-- Cursor bağlantısını arayüzden açma → resmî biçimde düşünce olayı → Çalışıyor → bitiş olayı → Tamamlandı → bağlantıyı kaldırma. Kullanıcının asıl `.cursor` ayarları değiştirilmedi.
-- Ayrı iki Rust penceresini Cursor adıyla açma, seçim diyaloğu ve küçültülmüş hedefi seçme. Windows'un gerçek ön plan penceresi hedef oldu, hedef geri yüklendi ve HUD kompakt kaldı. Kullanıcının IDE pencerelerine odaklanılmadı.
-- 48 px kompakt çubuk, 420 px panel, 380 px pencere/ayarlar; yatay taşma yok. Sabitleme gerçek `WS_EX_TOPMOST` ile açma/kapamada doğrulandı.
-- Hayalet modu gerçek `WS_EX_TRANSPARENT` bayrağı ve maskot alanına göre kontrol edildi; kapatınca etkileşim geri geldi. Küçültme, gizleme ve tekrar gösterme gerçek native bayraklarla geçti.
-- Görünüm geçişindeki Ghost kilidi/Tauri ana iş parçacığı bekleşmesi bulundu ve düzeltildi. Aynı uçtan uca kontrol düzeltmeden sonra geçti. Ayrılmış maskot DOM elemanının boş dikdörtgen bildirimi de düzeltildi; son çalışmada renderer sayfa hatası yok.
+`scripts/verify-tauri.mjs` iki sekmeli kapsam için güncellendi. Bu sürümde native pencere otomasyonu yeniden çalıştırılmadı; kullanıcı masaüstü kontrolünü fiziksel Escape ile durdurdu. Bu bir uygulama hatası olarak kaydedilmez.
 
-Bu kontrollerde oluşan ekran görüntüleri, makine sonuçları ve geçici profiller çalışma klasörü temizliğinde silindi. Tekrar üretmek için README'deki derleme ve `pnpm test:ui` adımlarını kullan; yeni çıktılar `.cache/` altında oluşur. Canlı kullanım ve proje bilgisi içerebildikleri için Git dışında tutulur.
+## Korunan Windows davranışı
+
+Tauri 0.7.0 üretim EXE'sinde daha önce gerçek WebView2/pencere kontrolleriyle sabitleme, küçültme, tepsi, tek örnek geri çağırma, 48 px çubuk ve click-through doğrulandı. Kullanıcı gerçek klavyede Alt basılıyken panelin açıldığını, bırakınca çubuğa döndüğünü doğruladı. Ctrl + Shift + H gerçek Windows girdisiyle geçti. İlgili pencere/hayalet modu kodu 0.8.0'da değişmedi; bu geçmiş kanıt, yeni bir native test çalıştırması olarak sunulmaz.
 
 ## Dağıtım
 
-`pnpm package` başarılı: optimize Rust EXE ve x64 NSIS yükleyicisi üretildi. Yukarıdaki tüm WebView2 ekran/pencere akışı **son üretim EXE'sinde tekrar geçti**; renderer sayfa hatası yok. Üç sağlayıcıya ek olarak 3 / 3 bağlantı sayacı doğrulandı. Tek örnek ikinci açılış testi geçti.
+`pnpm package` başarılı: TypeScript/Vite üretim derlemesi (20 modül), optimize Rust EXE ve x64 NSIS yükleyicisi üretildi.
 
-Son üretim kontrolünde kendi Node TCP test sunucusu arayüzden durdurulup yeniden başlatıldı. Yanıttaki PID değişti; rastgele test kimliği ve Unicode/apostrof içeren `cwd` birebir aynı kaldı. Yalnızca testin kendi portuna dokunuldu. Bu sunucunun Node çalışma ortamı test içindir; dağıtıma Node eklenmez.
+Kopyalanan `release/AgentHUD-0.8.0-Windows.exe` üzerinde `--live-check` sonucu: **Cursor bağlı / 2 ölçüm; Antigravity bağlı / 5 ölçüm; Codex bağlı / 1 ölçüm**. Ham kimlik bilgileri veya kullanım yanıtları yazdırılmadı.
 
-| Dosya | Boyut | SHA256 |
-| --- | --- | --- |
-| `release/AgentHUD-0.7.0-Setup.exe` | 4.188.898 bayt | `42bdb99f79b7abed6ca4f6f48ff2660d5588d28fe13b340bfe984962587f14d9` |
-| `release/AgentHUD-0.7.0-Windows.exe` | 15.228.416 bayt | `84306f0edd884f0b29e7febf69f660a2d803ddb9f9966087eb2b047aa168db68` |
+| Dosya                        | Boyut           | SHA256                                                             |
+| ---------------------------- | --------------- | ------------------------------------------------------------------ |
+| `AgentHUD-0.8.0-Setup.exe`   | 4.032.014 bayt  | `921ca14ad2eea6a737f1a28180a68b52d6671bf734010db8db416276ad80ffa6` |
+| `AgentHUD-0.8.0-Windows.exe` | 14.665.728 bayt | `c40e5a67d87644be402a8b823d3ff466d41f855a4568df7033e3d339e31d86ec` |
 
-İki dosyanın imzası `NotSigned`. Kurulumun kullanıcı hesabına gerçekten kurulması bu geliştirme kontrolünde yapılmadı; yükleyici üretildi ve onun paketlediği uygulama EXE'si çalıştırıldı. Kopyalanmış son EXE'de `--live-check` tekrar **Cursor 2 / Antigravity 5 / Codex 1, üçü bağlı** döndürdü. `release/SHA256SUMS.txt` yalnızca mevcut iki Tauri paketinin doğrulama değerlerini içerir.
+İki dosyanın imzası `NotSigned`; doğrulama değerleri `release/SHA256SUMS.txt` içindedir. Ara 0.7.1 paketleri kaldırıldı. Kullanıcının açık eski 0.7.0 uygulaması otomatik kapatılmadı: yeni sürümü kullanmak için eskisinden tepsi üzerinden çıkıp 0.8.0 açılmalı.
 
-## Kabul sınırları
-
-Cursor'un gerçek IDE görevinden olay alması kullanıcı bağlantısı etkinleşince doğrulanmalıdır. Ayrı profildeki resmî biçimli olaylar bu canlı kabulün yerine geçmez. Bütün gerçek IDE/terminal ortamları odaklanma için denenmedi. Alt basılı tutmanın fiziksel klavye kabulü yapılmadı; durum geçişi mantık testlerinde kapsandı. Önceki Electron fiziksel kontrolleri yeni sürümün kanıtı değildir.
-
-Kaynağın döndürmediği onay veya tamamlanma durumları uydurulmaz. Herdr isteğe bağlıdır ve uygulanmadı. Claude entegrasyonu son istekle kaldırıldığı için Claude hesabı/giriş testi beklenmiyor. Windows paketi imzasızdır; WebView2 çalışma ortamı gerekir.
+NSIS paketinin kullanıcı hesabına kurulması ayrıca denenmedi. Windows WebView2 gerekir; kurulum bunu eksikse sağlar. Native 0.8.0 pencere testi yerine güncel arayüzün başsız kontrolü ve üretim EXE'sinin gerçek sağlayıcı kontrolü yapıldı. Pencere kodunun önceki kanıtı yukarıda ayrıca belirtilir.

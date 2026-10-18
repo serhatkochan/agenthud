@@ -163,7 +163,7 @@ impl PortManager {
         if entry.pid == std::process::id() {
             return Err("Uygulamanın kendi süreci durdurulamaz.".into());
         }
-        let current = system::inventory(true, false)?
+        let current = system::inventory(true)?
             .processes
             .into_iter()
             .find(|p| p.process_id == entry.pid)
@@ -667,7 +667,7 @@ while($true){Start-Sleep -Milliseconds 100}
         let port = first["port"].as_u64().unwrap() as u16;
         assert_eq!(first["first"], "two words");
         assert_eq!(first["last"], "C:\\trailing\\");
-        let mut inventory = system::inventory(true, false).unwrap();
+        let mut inventory = system::inventory(true).unwrap();
         let process = inventory
             .processes
             .iter_mut()

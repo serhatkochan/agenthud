@@ -14,11 +14,11 @@ Normal panel, küçük yüzen panel ve 36-48 piksel özet modu. Her zaman üstte
 
 Geliştirme portları gerçek PID ve süreç zinciriyle bulunur. Aç, durdur ve bilinen komut için yeniden başlat. Durdurulan satır 10 dakika saklanır. PID yeniden kullanımı doğrulanır. Yetim üst süreç tek başına kesin zombi kanıtı sayılmaz. Cwd bilinmiyorsa klasör tahmin edilmez.
 
-Ajanlar için süreç varlığı çalışma durumu kanıtı sayılmaz. Working, Blocked, Done ve Idle yalnızca oturum olaylarıyla doğrulanır. Bulunabilen uygulama pencerelerine odaklanılır. Herdr isteğe bağlıdır.
+Ajanlar bölümü, oturum olaylarını okuma, Cursor gözlemcisi ve uygulama pencerelerine odaklanma son kullanıcı isteğiyle kaldırıldı. Güncel kapsam yalnızca kota ve port yönetimidir.
 
 ## Teknik yaklaşım
 
-Rust + Tauri 2 + React 19 + TypeScript + Vite. `rusqlite` Cursor oturumunu salt okunur açar; `reqwest` HTTP isteklerini sınırlar. Rust çekirdeği kota, süreç/port keşfi, oturumlar, pencere odağı ve dar IPC sözleşmelerini sahiplenir. React yalnızca izin verilen komutlarla konuşur; genel dosya, kabuk veya HTTP yetkisi yoktur. Tauri, Windows WebView2 kullanır. Dağıtımda Electron veya Node yan süreç yoktur. Windows PowerShell yalnızca yerel envanter ve açıkça bağlanan Cursor gözlemcisi için kullanılır.
+Rust + Tauri 2 + React 19 + TypeScript + Vite. `rusqlite` Cursor oturumunu salt okunur açar; `reqwest` HTTP isteklerini sınırlar. Rust çekirdeği kota, süreç/port keşfi, pencere yönetimi ve dar IPC sözleşmelerini sahiplenir. React yalnızca izin verilen komutlarla konuşur; genel dosya, kabuk veya HTTP yetkisi yoktur. Tauri, Windows WebView2 kullanır. Dağıtımda Electron veya Node yan süreç yoktur. Windows PowerShell yalnızca yerel envanter için kullanılır.
 
 ## Tasarım
 
@@ -29,7 +29,7 @@ Koyu grafit zemin IDE yanında gözü yormaz. Nane yeşili eylem ve kalan hakkı
 1. Kota ayrıştırıcıları: ters yüzde, sıfır, eksik, geçersiz değer ve model grubu testleri.
 2. Gerçek yerel kaynaklar ve giriş bağlantıları; gizli bilgi içermeyen canlı kontrol.
 3. Erişilebilir normal/yüzen arayüz, boş/yükleniyor/hata durumları.
-4. Portlar ve kanıtlı ajan oturumları.
+4. Portlar, süreç kimliği ve yeniden başlatma.
 5. Build, testler, gerçek ekran ve tıklama kontrolleri, Windows paket.
 
 Tamamlanmamış şartlar doğrulama raporunda açık tutulur; sadece arayüzün açılması bütün hedefin tamamlandığı sayılmaz.

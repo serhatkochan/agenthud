@@ -1,7 +1,6 @@
 import type { CSSProperties } from "react";
 type Kind =
   | "radar"
-  | "agents"
   | "ports"
   | "settings"
   | "refresh"
@@ -24,12 +23,6 @@ const paths: Record<Kind, React.ReactNode> = {
       <circle cx="12" cy="12" r="8" />
       <circle cx="12" cy="12" r="4" />
       <path d="m12 12 7-7" />
-    </>
-  ),
-  agents: (
-    <>
-      <rect x="5" y="7" width="14" height="12" rx="4" />
-      <path d="M12 3v4M8 12h.01M16 12h.01M9 16h6M2 11v4M22 11v4" />
     </>
   ),
   ports: (
@@ -156,7 +149,7 @@ export function Mascot({
   mood = "idle",
   small = false,
 }: {
-  mood?: string;
+  mood?: "idle" | "low";
   small?: boolean;
 }) {
   return (

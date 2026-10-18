@@ -1,7 +1,6 @@
 use crate::models::{now_ms, Inventory};
 use base64::{engine::general_purpose, Engine};
 use chrono::{DateTime, NaiveDate, SecondsFormat, Utc};
-use futures_util::{stream::FuturesUnordered, StreamExt};
 use reqwest::{
     header::{HeaderMap, HeaderValue},
     redirect::Policy,
@@ -11,7 +10,7 @@ use rusqlite::{types::ValueRef, Connection, OpenFlags};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
-    collections::{BTreeMap, HashSet},
+    collections::HashSet,
     io::Read,
     path::{Path, PathBuf},
     time::Duration,
@@ -246,61 +245,6 @@ fn parse_antigravity(data: &Value) -> Vec<Value> {
     rows
 }
 
-fn workspace(record: &Value) -> String {
-    let mut roots = Vec::new();
-    for entries in [
-        &record["workspaces"],
-        &record["trajectoryMetadata"]["workspaces"],
-    ] {
-        if let Some(entries) = entries.as_array() {
-            roots.extend(
-                entries
-                    .iter()
-                    .filter_map(|entry| entry["workspaceFolderAbsoluteUri"].as_str()),
-            );
-        }
-    }
-    if let Some(entries) = record["trajectoryMetadata"]["workspaceUris"].as_array() {
-        roots.extend(entries.iter().filter_map(Value::as_str));
-    }
-    roots
-        .into_iter()
-        .find_map(|root| {
-            let uri = url::Url::parse(root).ok()?;
-            if uri.scheme() != "file" {
-                return None;
-            }
-            uri.to_file_path()
-                .ok()
-                .and_then(|path| path.into_os_string().into_string().ok())
-        })
-        .unwrap_or_default()
-}
-
-fn has_trajectories(data: &Value) -> bool {
-    data["trajectorySummaries"].is_object()
-}
-
-fn parse_antigravity_sessions(data: &Value, now: u64) -> Vec<Value> {
-    let Some(records) = data["trajectorySummaries"].as_object() else {
-        return Vec::new();
-    };
-    records.iter().filter_map(|(id,record)| {
-        if !record.is_object() || id.is_empty() || id.len()>160 || !id.bytes().all(|b|b.is_ascii_alphanumeric() || b"_.:-".contains(&b)) {return None;}
-        let (state,label)=match record["status"].as_str() {
-            Some("CASCADE_RUN_STATUS_IDLE")=>("idle","Boşta"),
-            Some("CASCADE_RUN_STATUS_RUNNING")=>("working","Çalışıyor"),
-            Some("CASCADE_RUN_STATUS_BUSY")=>("working","Meşgul"),
-            Some("CASCADE_RUN_STATUS_CANCELING")=>("unknown","Durduruluyor"),
-            _=>("unknown","Durum bilinmiyor")
-        };
-        let cwd=workspace(record);
-        let project=cwd.trim_end_matches(['\\','/']).rsplit(['\\','/']).next().filter(|s|!s.is_empty()).unwrap_or("Antigravity oturumu");
-        let timestamp=record["lastModifiedTime"].as_str().and_then(|s|DateTime::parse_from_rfc3339(s).ok()).map(|date|date.timestamp_millis()).unwrap_or(0);
-        Some(json!({"id":format!("antigravity:{id}"),"provider":"antigravity","project":project,"cwd":cwd,"state":state,"statusLabel":label,"source":"Antigravity · yerel servis","updatedAt":timestamp,"observedAt":now}))
-    }).collect()
-}
-
 struct Target {
     port: u16,
     token: String,
@@ -401,7 +345,6 @@ async fn post_language_server(target: &Target, method: &str) -> Result<Value, &'
         return Err("local-api-port");
     }
     if ![
-        "GetAllCascadeTrajectories",
         "RetrieveUserQuotaSummary",
         "GetUserStatus",
         "GetCommandModelConfigs",
@@ -453,42 +396,6 @@ async fn bounded_json(mut response: Response) -> Result<Value, &'static str> {
         body.extend_from_slice(&chunk);
     }
     serde_json::from_slice(&body).map_err(|_| "local-api-json")
-}
-
-pub async fn read_antigravity_sessions(system: &Inventory) -> Vec<Value> {
-    let servers = language_servers(system);
-    let results = futures_util::future::join_all(servers.iter().map(|server| async {
-        let mut pending = server
-            .targets
-            .iter()
-            .map(|target| async move {
-                let data = post_language_server(target, "GetAllCascadeTrajectories")
-                    .await
-                    .ok()?;
-                if !has_trajectories(&data) {
-                    return None;
-                }
-                Some(parse_antigravity_sessions(&data, now_ms()))
-            })
-            .collect::<FuturesUnordered<_>>();
-        while let Some(result) = pending.next().await {
-            if result.is_some() {
-                return result;
-            }
-        }
-        None
-    }))
-    .await;
-    let mut unique = BTreeMap::<String, Value>::new();
-    for session in results.into_iter().flatten().flatten() {
-        let id = session["id"].as_str().unwrap_or("").to_owned();
-        if unique.get(&id).is_none_or(|previous| {
-            session["updatedAt"].as_i64().unwrap_or(0) > previous["updatedAt"].as_i64().unwrap_or(0)
-        }) {
-            unique.insert(id, session);
-        }
-    }
-    unique.into_values().collect()
 }
 
 struct Credentials {
@@ -886,72 +793,6 @@ mod tests {
         }
     }
 
-    #[test]
-    fn trajectory_status_and_workspace_are_safe_observed_fields() {
-        let data = json!({"trajectorySummaries":{"session-0":{
-            "status":"CASCADE_RUN_STATUS_IDLE","lastModifiedTime":"2026-10-18T04:14:26Z",
-            "workspaces":[{"workspaceFolderAbsoluteUri":"file:///c:/ex/My%20project"}],
-            "summary":"PRIVATE PROMPT","annotations":{"title":"PRIVATE TITLE"},"token":"PRIVATE TOKEN"
-        }}});
-        let rows = parse_antigravity_sessions(&data, 1800000000000);
-        assert_eq!(rows.len(), 1);
-        assert_eq!(
-            rows[0],
-            json!({"id":"antigravity:session-0","provider":"antigravity","project":"My project","cwd":"c:\\ex\\My project","state":"idle","statusLabel":"Boşta","source":"Antigravity · yerel servis","updatedAt":1792296866000i64,"observedAt":1800000000000u64})
-        );
-        assert!(!serde_json::to_string(&rows).unwrap().contains("PRIVATE"));
-    }
-
-    #[test]
-    fn trajectories_accept_only_known_statuses_and_valid_records() {
-        let data = json!({"trajectorySummaries":{
-            "running":{"status":"CASCADE_RUN_STATUS_RUNNING"},
-            "busy":{"status":"CASCADE_RUN_STATUS_BUSY"},
-            "canceling":{"status":"CASCADE_RUN_STATUS_CANCELING"},
-            "unknown":{"status":"WAITING_FOR_APPROVAL"},
-            "constructor":{"status":"constructor"},
-            "bad/id":{"status":"CASCADE_RUN_STATUS_IDLE"},
-            "bad":null
-        }});
-        let rows = parse_antigravity_sessions(&data, 100);
-        assert_eq!(rows.len(), 5);
-        for (id, state, label) in [
-            ("running", "working", "Çalışıyor"),
-            ("busy", "working", "Meşgul"),
-            ("canceling", "unknown", "Durduruluyor"),
-            ("unknown", "unknown", "Durum bilinmiyor"),
-            ("constructor", "unknown", "Durum bilinmiyor"),
-        ] {
-            let row = rows
-                .iter()
-                .find(|r| r["id"] == format!("antigravity:{id}"))
-                .unwrap();
-            assert_eq!(row["state"], state);
-            assert_eq!(row["statusLabel"], label);
-            assert_eq!(row["updatedAt"], 0);
-        }
-        for bad in [Value::Null, json!({}), json!({"trajectorySummaries":[]})] {
-            assert!(parse_antigravity_sessions(&bad, 100).is_empty());
-        }
-    }
-
-    #[test]
-    fn trajectory_workspace_fallback_decodes_utf8_and_ignores_web_urls() {
-        let rows = parse_antigravity_sessions(
-            &json!({"trajectorySummaries":{
-                "a":{"trajectoryMetadata":{"workspaceUris":["file:///c:/ex/T%C3%BCrk%C3%A7e"]}},
-                "b":{"workspaces":[{"workspaceFolderAbsoluteUri":"https://example.com/private"}]}
-            }}),
-            200,
-        );
-        assert_eq!(rows.len(), 2);
-        let a = rows.iter().find(|r| r["id"] == "antigravity:a").unwrap();
-        let b = rows.iter().find(|r| r["id"] == "antigravity:b").unwrap();
-        assert_eq!(a["cwd"], "c:\\ex\\Türkçe");
-        assert_eq!(b["cwd"], "");
-        assert_eq!(b["project"], "Antigravity oturumu");
-    }
-
     fn local_server(
         handler: impl FnOnce(std::net::TcpStream) + Send + 'static,
     ) -> (u16, std::thread::JoinHandle<()>) {
@@ -1022,7 +863,9 @@ mod tests {
         use std::io::Write;
         let (port, thread) = local_server(|mut stream| {
             let req = request(&mut stream);
-            assert!(req.starts_with("POST /exa.language_server_pb.LanguageServerService/GetAllCascadeTrajectories HTTP/1.1"));
+            assert!(req.starts_with(
+                "POST /exa.language_server_pb.LanguageServerService/GetUserStatus HTTP/1.1"
+            ));
             assert!(req
                 .to_lowercase()
                 .contains("x-codeium-csrf-token: fixture\r\n"));
@@ -1034,7 +877,7 @@ mod tests {
                 body["metadata"],
                 json!({"ideName":"antigravity","extensionName":"antigravity","ideVersion":"unknown","locale":"en"})
             );
-            let body = "{\"trajectorySummaries\":{}}";
+            let body = "{\"userStatus\":{}}";
             write!(
                 stream,
                 "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
@@ -1049,10 +892,10 @@ mod tests {
                 token: "fixture".into(),
                 secure: false,
             },
-            "GetAllCascadeTrajectories",
+            "GetUserStatus",
         )
         .await;
-        assert_eq!(result.unwrap(), json!({"trajectorySummaries":{}}));
+        assert_eq!(result.unwrap(), json!({"userStatus":{}}));
         thread.join().unwrap();
     }
 
@@ -1281,43 +1124,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn public_session_flow_merges_duplicate_trajectories_by_newest_observation() {
-        use std::io::Write;
-        let mut processes = Vec::new();
-        let mut threads = Vec::new();
-        for (pid, status, time) in [
-            (10, "CASCADE_RUN_STATUS_RUNNING", "2026-10-18T01:00:00Z"),
-            (11, "CASCADE_RUN_STATUS_IDLE", "2026-10-18T02:00:00Z"),
-        ] {
-            let (port, thread) = local_server(move |mut stream| {
-                request(&mut stream);
-                let body=json!({"trajectorySummaries":{"same":{"status":status,"lastModifiedTime":time}}}).to_string();
-                write!(
-                    stream,
-                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
-                    body.len(),
-                    body
-                )
-                .unwrap();
-            });
-            processes.push(antigravity_process(pid, port));
-            threads.push(thread);
-        }
-        let rows = read_antigravity_sessions(&Inventory {
-            processes,
-            listeners: vec![],
-        })
-        .await;
-        assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0]["id"], "antigravity:same");
-        assert_eq!(rows[0]["state"], "idle");
-        assert_eq!(rows[0]["updatedAt"], 1792288800000i64);
-        for thread in threads {
-            thread.join().unwrap();
-        }
-    }
-
-    #[tokio::test]
     async fn unsupported_provider_and_closed_local_app_have_honest_empty_results() {
         assert_eq!(
             provider_metadata()
@@ -1334,7 +1140,6 @@ mod tests {
         let closed = read_provider("antigravity", &system).await;
         assert_eq!(closed["errorKind"], "local");
         assert_eq!(closed["quotas"], json!([]));
-        assert!(read_antigravity_sessions(&system).await.is_empty());
     }
 
     #[tokio::test]

@@ -31,18 +31,6 @@ export interface Port {
   orphan: boolean;
   canRestart: boolean;
 }
-export interface AgentSession {
-  id: string;
-  provider: ProviderId;
-  project: string;
-  state: "working" | "done" | "blocked" | "idle" | "unknown";
-  cwd: string;
-  updatedAt: number;
-  source?: string;
-  statusLabel?: string;
-  observedAt?: number;
-  stale?: boolean;
-}
 export interface Settings {
   alwaysOnTop: boolean;
   refreshSeconds: number;
@@ -50,43 +38,23 @@ export interface Settings {
   clickThrough: boolean;
   launchCompact: boolean;
 }
-export interface TrackingConnection {
-  enabled: boolean;
-  status: "loading" | "off" | "waiting" | "active" | "error";
-  configPath: string;
-  message?: string;
-  lastEventAt?: number;
-}
 export interface Snapshot {
   providers: Provider[];
   ports: Port[];
-  sessions: AgentSession[];
   settings: Settings;
   mode: "dashboard" | "panel" | "compact";
   refreshing: boolean;
   systemError?: string;
   refreshedAt?: number;
   shortcutAvailable: boolean;
-  sessionsUpdatedAt?: number;
-  sessionsError?: string;
   recoveryShortcut?: string | null;
   ghostAvailable?: boolean;
   ghostPeeking?: boolean;
   ghostError?: string;
-  cursorTracking: TrackingConnection;
 }
 export interface Result {
   ok?: boolean;
   message?: string;
-}
-export interface FocusChoice {
-  id: string;
-  title: string;
-  app: string;
-}
-export interface FocusResult extends Result {
-  choices?: FocusChoice[];
-  scope?: "project" | "application" | "selected";
 }
 export interface Bridge {
   snapshot(): Promise<Snapshot>;
@@ -96,8 +64,6 @@ export interface Bridge {
   setSettings(patch: Partial<Settings>): Promise<Snapshot & Result>;
   window(action: string): Promise<Snapshot>;
   port(action: string, key: string): Promise<Result>;
-  focus(sessionId: string, choiceId?: string): Promise<FocusResult>;
-  tracking(provider: "cursor", enabled: boolean): Promise<Result>;
   hotspot(
     rectangle: { x: number; y: number; width: number; height: number } | null,
   ): Promise<Result>;

@@ -1,6 +1,6 @@
 [package]
 name = "agenthud"
-version = "0.7.0"
+version = "0.8.0"
 edition = "2021"
 description = "Yerel AI kota ve geliştirici paneli"
 
@@ -25,9 +25,7 @@ base64 = "0.22"
 sha2 = "0.10"
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1", features = ["v4"] }
-url = "2"
 futures-util = "0.3"
-unicode-normalization = "0.1"
 windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_Threading", "Win32_Graphics_Gdi", "Win32_System_LibraryLoader", "Win32_Security"] }
 
 [dev-dependencies]

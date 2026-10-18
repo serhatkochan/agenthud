@@ -95,30 +95,21 @@ fn run_hidden(
 }
 
 pub fn read_processes() -> Result<Vec<ProcessInfo>, String> {
-    read_processes_filtered(false)
-}
-
-fn read_processes_filtered(agents_only: bool) -> Result<Vec<ProcessInfo>, String> {
     if !cfg!(windows) {
         return Ok(vec![]);
     }
-    let filter = if agents_only {
-        " AND (Name='Cursor.exe' OR Name='Antigravity.exe' OR Name='Codex.exe' OR Name LIKE 'language%server%')"
-    } else {
-        ""
-    };
-    let source=format!("$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter \"SessionId=$sid{filter}\" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,@{{Name='CreationDate';Expression={{if($_.CreationDate){{$_.CreationDate.ToUniversalTime().ToString('o')}}else{{''}}}}}},@{{Name='CreationId';Expression={{if($_.CreationDate){{$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString([System.Globalization.CultureInfo]::InvariantCulture)}}else{{''}}}}}}) | ConvertTo-Json -Compress -Depth 3");
+    let source=format!("$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter \"SessionId=$sid\" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,@{{Name='CreationDate';Expression={{if($_.CreationDate){{$_.CreationDate.ToUniversalTime().ToString('o')}}else{{''}}}}}},@{{Name='CreationId';Expression={{if($_.CreationDate){{$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString([System.Globalization.CultureInfo]::InvariantCulture)}}else{{''}}}}}}) | ConvertTo-Json -Compress -Depth 3");
     decode_rows(&powershell(&source)?)?
         .into_iter()
         .map(|row| serde_json::from_value(row).map_err(|_| "Süreç bilgisi okunamadı.".to_owned()))
         .collect()
 }
 
-pub fn inventory(working_directories: bool, agents_only: bool) -> Result<Inventory, String> {
+pub fn inventory(working_directories: bool) -> Result<Inventory, String> {
     if !cfg!(windows) {
         return Ok(Inventory::default());
     }
-    let processes = read_processes_filtered(agents_only)?;
+    let processes = read_processes()?;
     let output = run_hidden(
         "netstat.exe",
         &["-ano", "-p", "tcp"],

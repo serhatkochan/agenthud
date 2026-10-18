@@ -18,11 +18,9 @@ const preview: Snapshot = {
     message: "Gerçek kullanım bilgileri masaüstü uygulamasında gösterilir.",
   })),
   ports: [],
-  sessions: [],
   mode: "dashboard",
   refreshing: false,
   shortcutAvailable: false,
-  cursorTracking: { enabled: false, status: "off", configPath: "" },
   settings: {
     alwaysOnTop: false,
     refreshSeconds: 60,
@@ -44,11 +42,7 @@ const desktop: Bridge = {
   setSettings: (patch) => invoke("set_settings", { patch }),
   window: (action) => invoke("window_action", { action }),
   port: (action, key) => invoke("port_action", { action, key }),
-  focus: (sessionId, choiceId) =>
-    invoke("focus_session", { sessionId, choiceId: choiceId ?? null }),
   hotspot: (rectangle) => invoke("set_hotspot", { rectangle }),
-  tracking: (provider, enabled) =>
-    invoke("set_tracking", { provider, enabled }),
   onUpdate: (fn) => {
     let disposed = false;
     let stop: (() => void) | undefined;
@@ -77,9 +71,7 @@ export const bridge: Bridge = isDesktop
       }),
       window: async (mode) => ({ ...preview, mode: mode as Snapshot["mode"] }),
       port: unavailable,
-      focus: unavailable,
       hotspot: unavailable,
-      tracking: unavailable,
       onUpdate: () => () => {},
     };
 if (isDesktop) {

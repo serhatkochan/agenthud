@@ -1,4 +1,4 @@
-# Hayalet modu · Tauri 0.7.0
+# Hayalet modu · Rust + Tauri
 
 Rust `ghost.rs` yalnızca etkileşim durumunu yönetir. `app.rs` Windows giriş bilgisini ve Tauri pencere işlemlerini bağlar.
 
@@ -11,6 +11,6 @@ Rust `ghost.rs` yalnızca etkileşim durumunu yönetir. `app.rs` Windows giriş 
 
 Pencere özellikleri okunurken Ghost kilidi tutulmaz: Tauri ana iş parçacığına dönen çağrı, aynı kilidi isteyen IPC'yi bekletmemelidir. Gerçek WebView2 testinde yakalanan eşzamanlı kilitlenme bu sınırla düzeltildi.
 
-Kanıt: `ghost.rs` durum/konum testleri, `scripts/verify-tauri.mjs` ile gerçek `WS_EX_TRANSPARENT`, sabitleme, görünüm ve geri çağırma kontrolleri. Alt basılı tutma geçişi mantık testlerinde kapsanır; fiziksel klavyede basılı tutma kabulü ayrıca yapılmalıdır. Önceki Electron fiziksel testleri yeni Tauri sürümüne kanıt sayılmaz.
+Kanıt: `ghost.rs` durum/konum testleri, `scripts/verify-tauri.mjs` ile gerçek `WS_EX_TRANSPARENT`, sabitleme, görünüm ve geri çağırma kontrolleri. 18 Ekim'de kullanıcı çalışan Tauri penceresinde Alt basılıyken panelin açıldığını ve bırakınca çubuğa döndüğünü doğruladı. Ctrl + Shift + H gerçek Windows girdisiyle hayalet modunu kapatıp paneli geri çağırdı. Fare aracının ilk maskot tıklaması hedef doğrulamasında alttaki Chrome'u gördüğü için uygulanmadı; bu deneme başarılı maskot tıklaması olarak kaydedilmez. Önceki Electron fiziksel testleri Tauri sürümüne kanıt sayılmaz.
 
 Kaynaklar: [Tauri Window API](https://docs.rs/tauri/latest/tauri/window/struct.Window.html), [GetAsyncKeyState](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getasynckeystate), [GetCursorPos](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getcursorpos).

@@ -12,8 +12,6 @@ import type {
   Result,
 } from "./types";
 import "./styles.css";
-import { CursorTracking } from "./CursorTracking";
-import { FocusButton } from "./FocusButton";
 
 const pretty = (v: number) =>
   new Intl.NumberFormat("tr-TR", {
@@ -35,17 +33,6 @@ function age(at: number | undefined, now: number) {
   return seconds < 60
     ? "Az önce güncellendi"
     : `${Math.floor(seconds / 60)} dk önce güncellendi`;
-}
-function activityAge(at: number, now: number) {
-  if (!at) return "";
-  const minutes = Math.max(0, Math.floor((now - at) / 60000));
-  return minutes < 1
-    ? "Son etkinlik az önce"
-    : minutes < 60
-      ? `Son etkinlik ${minutes} dk önce`
-      : minutes < 1440
-        ? `Son etkinlik ${Math.floor(minutes / 60)} sa önce`
-        : `Son etkinlik ${Math.floor(minutes / 1440)} gün önce`;
 }
 const health = (q: number) =>
   q < 20 ? "critical" : q < 50 ? "warning" : "healthy";
@@ -248,7 +235,7 @@ function Switch({
 }
 function App() {
   const [snapshot, setSnapshot] = useState<Snapshot>();
-  const [tab, setTab] = useState("quotas");
+  const [tab, setTab] = useState<"quotas" | "ports">("quotas");
   const [now, setNow] = useState(Date.now());
   const [toast, setToast] = useState("");
   const [dialog, setDialog] = useState<ProviderId | "settings" | null>(null);
@@ -354,13 +341,7 @@ function App() {
         .map((q) => ({ provider: p, ...q })),
     )
     .sort((a, b) => Date.parse(a.resetsAt!) - Date.parse(b.resetsAt!))[0];
-  const mood = s.sessions.some((a) => a.state === "blocked")
-    ? "blocked"
-    : lows.length
-      ? "low"
-      : s.sessions.some((a) => a.state === "working")
-        ? "working"
-        : "idle";
+  const mood = lows.length ? "low" : "idle";
   const closeDialog = () => {
     setDialog(null);
     setConfirmPort(null);
@@ -424,7 +405,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.7</span>
+              AgentHUD <span className="version">/ 0.8</span>
             </div>
             <div className="window-actions">
               <button
@@ -495,12 +476,6 @@ function App() {
                       count: connected,
                     },
                     {
-                      id: "agents",
-                      name: "agents",
-                      label: "Ajanlar",
-                      count: s.sessions.length,
-                    },
-                    {
                       id: "ports",
                       name: "ports",
                       label: "Yerel portlar",
@@ -563,27 +538,17 @@ function App() {
               <header className="page-header">
                 <div className="breadcrumb">
                   Çalışma alanı <span>/</span>{" "}
-                  {tab === "quotas"
-                    ? "Genel bakış"
-                    : tab === "agents"
-                      ? "Oturumlar"
-                      : "Port yöneticisi"}
+                  {tab === "quotas" ? "Genel bakış" : "Port yöneticisi"}
                 </div>
                 <div className="page-title">
                   <div>
                     <h1>
-                      {tab === "quotas"
-                        ? "Kota radarı"
-                        : tab === "agents"
-                          ? "Ajanların ne durumda?"
-                          : "Yerel portlar"}
+                      {tab === "quotas" ? "Kota radarı" : "Yerel portlar"}
                     </h1>
                     <p>
                       {tab === "quotas"
                         ? "Tüm araçların. Kalan hakların. Tek bakışta."
-                        : tab === "agents"
-                          ? "Açık uygulamalar ve yerel oturumlarından doğrulanan durumlar."
-                          : "Çalışan geliştirme sunucuların, bir arada."}
+                        : "Çalışan geliştirme sunucuların, bir arada."}
                     </p>
                   </div>
                   <button
@@ -693,75 +658,6 @@ function App() {
                     <span>Limitler sağlayıcılarından okunur.</span>
                   </div>
                 </>
-              ) : tab === "agents" ? (
-                <section className="list-surface">
-                  <CursorTracking
-                    connection={s.cursorTracking}
-                    disabled={!isDesktop}
-                    onChange={(enabled) => bridge.tracking("cursor", enabled)}
-                  />
-                  {s.sessions.length ? (
-                    s.sessions.map((a) => (
-                      <div
-                        className="session-row"
-                        key={a.id}
-                        data-provider={a.provider}
-                        aria-label={`${a.provider} · ${a.project}`}
-                      >
-                        <span className={`brand brand-${a.provider}`}>
-                          <Brand id={a.provider} />
-                        </span>
-                        <div className="session-detail">
-                          <strong>{a.project}</strong>
-                          <span title={a.cwd}>
-                            {a.cwd ||
-                              "Çalışma durumu için oturum kaydı bulunamadı"}
-                          </span>
-                          <span
-                            className="session-source"
-                            title={`${a.source || ""}${a.updatedAt ? ` · ${activityAge(a.updatedAt, now)}` : ""}`}
-                          >
-                            {a.source}
-                            {a.updatedAt
-                              ? ` · ${activityAge(a.updatedAt, now)}`
-                              : ""}
-                          </span>
-                        </div>
-                        <span className={`agent-state ${a.state}`}>
-                          {a.statusLabel ||
-                            {
-                              working: "Çalışıyor",
-                              done: "Tamamlandı",
-                              blocked: "Onay bekliyor",
-                              idle: "Boşta",
-                              unknown: "Durum bilinmiyor",
-                            }[a.state]}
-                        </span>
-                        <FocusButton
-                          session={a}
-                          onFocus={(id, choice) => bridge.focus(id, choice)}
-                          onError={announce}
-                        />
-                      </div>
-                    ))
-                  ) : (
-                    <Empty
-                      icon="agents"
-                      title="Henüz oturum görünmüyor"
-                      text="Cursor, Codex veya Antigravity açıldığında burada görünecek."
-                    />
-                  )}
-                  <p className="list-explanation">
-                    <Icon name="info" size={14} />
-                    Bir uygulamanın açık olması, ajanın çalıştığı anlamına
-                    gelmez. Durumlar yalnızca doğrulanabilen kayıtlardan alınır.
-                  </p>
-                  {s.sessionsError && (
-                    <p className="inline-warning" role="status">
-                      {s.sessionsError}
-                    </p>
-                  )}
-                </section>
               ) : (
                 <section className="list-surface">
                   {s.ports.length ? (
@@ -848,20 +744,10 @@ function App() {
                   <i />
                   Bu cihazda çalışıyor
                 </span>
-                {tab === "agents" ? (
-                  <span
-                    className="session-poll"
-                    data-checked-at={s.sessionsUpdatedAt || 0}
-                    title={age(s.sessionsUpdatedAt, now)}
-                  >
-                    Ajanlar 5 saniyede bir kontrol edilir
-                  </span>
-                ) : (
-                  <button onClick={() => setDialog("settings")}>
-                    Her {s.settings.refreshSeconds} saniyede bir yenilenir
-                    <Icon name="settings" size={12} />
-                  </button>
-                )}
+                <button onClick={() => setDialog("settings")}>
+                  Her {s.settings.refreshSeconds} saniyede bir yenilenir
+                  <Icon name="settings" size={12} />
+                </button>
               </footer>
             </main>
           </div>
@@ -1047,7 +933,7 @@ function Empty({
   title,
   text,
 }: {
-  icon: "agents" | "ports";
+  icon: "ports";
   title: string;
   text: string;
 }) {

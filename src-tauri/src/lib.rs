@@ -1,18 +1,15 @@
 mod app;
-pub mod cursor_tracker;
-pub mod focus;
 mod ghost;
 mod layout;
 pub mod models;
 pub mod ports;
 pub mod providers;
-pub mod sessions;
 pub mod system;
 pub fn run() {
     if std::env::args().any(|arg| arg == "--live-check") {
         let runtime = tokio::runtime::Runtime::new().expect("Kontrol başlatılamadı");
         let results = runtime.block_on(async {
-            let system = system::inventory(false, false).unwrap_or_default();
+            let system = system::inventory(false).unwrap_or_default();
             let mut rows = vec![];
             for id in ["cursor", "antigravity", "codex"] {
                 let result = providers::read_provider(id, &system).await;
@@ -55,8 +52,6 @@ pub fn run() {
             app::window_action,
             app::set_settings,
             app::port_action,
-            app::focus_session,
-            app::set_tracking,
             app::set_hotspot
         ])
         .on_window_event(app::close)

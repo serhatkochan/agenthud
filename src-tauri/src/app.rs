@@ -1,11 +1,9 @@
 use crate::{
-    cursor_tracker::CursorTracker,
-    focus::FocusService,
     ghost::{Ghost, Hotspot},
     layout::{layout, Rect},
     models::{now_ms, Inventory},
     ports::PortManager,
-    providers, sessions, system,
+    providers, system,
 };
 use serde_json::{json, Value};
 use std::{
@@ -24,14 +22,11 @@ use tauri_plugin_notification::NotificationExt;
 pub struct Runtime {
     data: Mutex<Value>,
     ports: Mutex<PortManager>,
-    tracker: Mutex<CursorTracker>,
-    focus: Mutex<FocusService>,
     ghost: Mutex<Ghost>,
     raw_providers: Mutex<HashMap<String, Value>>,
     warned: Mutex<HashSet<String>>,
     config: PathBuf,
     refresh_lock: tokio::sync::Mutex<()>,
-    session_lock: tokio::sync::Mutex<()>,
     refresh_changed: tokio::sync::Notify,
     pub quitting: AtomicBool,
 }
@@ -65,13 +60,6 @@ impl Runtime {
                     .and_then(|raw| serde_json::from_slice::<Value>(&raw).ok())
             })
             .unwrap_or(Value::Null);
-        let directory = std::env::var_os("AGENTHUD_CURSOR_DIRECTORY")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| {
-                PathBuf::from(std::env::var_os("USERPROFILE").unwrap_or_default()).join(".cursor")
-            });
-        let tracker = CursorTracker::new(directory);
-        let tracking = tracker.status();
         let providers = providers::provider_metadata()
             .into_iter()
             .map(|mut p| {
@@ -82,17 +70,14 @@ impl Runtime {
             .collect::<Vec<_>>();
         Self {
             data: Mutex::new(
-                json!({"providers":providers,"ports":[],"sessions":[],"settings":settings_from(&existing),"mode":"dashboard","refreshing":false,"shortcutAvailable":false,"recoveryShortcut":null,"ghostAvailable":false,"ghostPeeking":false,"cursorTracking":tracking}),
+                json!({"providers":providers,"ports":[],"settings":settings_from(&existing),"mode":"dashboard","refreshing":false,"shortcutAvailable":false,"recoveryShortcut":null,"ghostAvailable":false,"ghostPeeking":false}),
             ),
             ports: Mutex::new(PortManager::new()),
-            tracker: Mutex::new(tracker),
-            focus: Mutex::new(FocusService::new()),
             ghost: Mutex::new(Ghost::default()),
             raw_providers: Mutex::new(HashMap::new()),
             warned: Mutex::new(HashSet::new()),
             config,
             refresh_lock: tokio::sync::Mutex::new(()),
-            session_lock: tokio::sync::Mutex::new(()),
             refresh_changed: tokio::sync::Notify::new(),
             quitting: AtomicBool::new(false),
         }
@@ -229,54 +214,17 @@ fn quit(app: &AppHandle) {
     rt(app).quitting.store(true, Ordering::Relaxed);
     app.exit(0);
 }
-async fn inventory(working: bool, agents: bool) -> Result<Inventory, String> {
-    tauri::async_runtime::spawn_blocking(move || system::inventory(working, agents))
+async fn inventory(working: bool) -> Result<Inventory, String> {
+    tauri::async_runtime::spawn_blocking(move || system::inventory(working))
         .await
         .map_err(|_| "Yerel bilgiler okunamadı.".to_string())?
-}
-pub async fn refresh_sessions(app: &AppHandle) {
-    let runtime = rt(app);
-    let Ok(_guard) = runtime.session_lock.try_lock() else {
-        return;
-    };
-    let result = inventory(false, true).await;
-    match result {
-        Ok(system) => {
-            let tracker = runtime.clone();
-            let cursor = tauri::async_runtime::spawn_blocking(move || {
-                tracker.tracker.lock().unwrap().read_sessions()
-            })
-            .await;
-            if let Ok((connection, cursor_sessions)) = cursor {
-                let rows = sessions::read_sessions(&system, cursor_sessions).await;
-                let mut data = runtime.data.lock().unwrap();
-                data["cursorTracking"] = connection;
-                data["sessions"] = rows.into();
-                data["sessionsUpdatedAt"] = now_ms().into();
-                data["sessionsError"] = Value::Null;
-            }
-        }
-        Err(_) => {
-            let mut data = runtime.data.lock().unwrap();
-            if let Some(rows) = data["sessions"].as_array_mut() {
-                for row in rows {
-                    row["state"] = "unknown".into();
-                    row["statusLabel"] = "Son kontrol başarısız".into();
-                    row["stale"] = true.into();
-                }
-            }
-            data["sessionsError"] =
-                "Ajan durumları okunamadı. Son görülen oturumlar gösteriliyor.".into();
-        }
-    }
-    emit(app);
 }
 async fn refresh_all(app: &AppHandle) -> Value {
     let runtime = rt(app);
     let _guard = runtime.refresh_lock.lock().await;
     runtime.data.lock().unwrap()["refreshing"] = true.into();
     emit(app);
-    let system = inventory(true, false).await;
+    let system = inventory(true).await;
     let inventory = match system {
         Ok(system) => {
             let rows = runtime.ports.lock().unwrap().scan(&system);
@@ -535,59 +483,6 @@ pub async fn port_action(
     Ok(json!({"ok":true}))
 }
 #[tauri::command]
-pub async fn focus_session(
-    window: WebviewWindow,
-    app: AppHandle,
-    session_id: String,
-    choice_id: Option<String>,
-) -> Result<Value, String> {
-    authorize(&window)?;
-    if session_id.len() > 4096 || choice_id.as_ref().is_some_and(|id| id.len() > 128) {
-        return Err("Geçersiz oturum.".into());
-    }
-    let runtime = rt(&app);
-    let session = runtime.snapshot()["sessions"]
-        .as_array()
-        .and_then(|rows| rows.iter().find(|row| row["id"] == session_id))
-        .cloned()
-        .ok_or("Oturum artık listede yok.")?;
-    let value = tauri::async_runtime::spawn_blocking(move || {
-        let processes = system::read_processes()?;
-        Ok::<_, String>(runtime.focus.lock().unwrap().request(
-            &session,
-            choice_id.as_deref(),
-            &processes,
-        ))
-    })
-    .await
-    .map_err(|_| "Pencere seçilemedi.".to_string())??;
-    if value["ok"] == true && value["choices"].is_null() {
-        let runtime = rt(&app);
-        runtime.ghost.lock().unwrap().cancel();
-        apply_mode(&app, "compact", None)?;
-    }
-    Ok(value)
-}
-#[tauri::command]
-pub async fn set_tracking(
-    window: WebviewWindow,
-    app: AppHandle,
-    provider: String,
-    enabled: bool,
-) -> Result<Value, String> {
-    authorize(&window)?;
-    if provider != "cursor" {
-        return Err("Geçersiz takip ayarı.".into());
-    }
-    let runtime = rt(&app);
-    let task = runtime.clone();
-    tauri::async_runtime::spawn_blocking(move || task.tracker.lock().unwrap().set_enabled(enabled))
-        .await
-        .map_err(|_| "Takip ayarı kaydedilemedi.".to_string())??;
-    refresh_sessions(&app).await;
-    Ok(json!({"ok":true}))
-}
-#[tauri::command]
 pub fn set_hotspot(
     window: WebviewWindow,
     app: AppHandle,
@@ -760,15 +655,6 @@ pub fn setup(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
         }
     });
     let handle = app.handle().clone();
-    tauri::async_runtime::spawn(async move {
-        let mut timer = tokio::time::interval(Duration::from_secs(5));
-        timer.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
-        loop {
-            timer.tick().await;
-            refresh_sessions(&handle).await;
-        }
-    });
-    let handle = app.handle().clone();
     std::thread::spawn(move || loop {
         std::thread::sleep(Duration::from_millis(40));
         if rt(&handle).quitting.load(Ordering::Relaxed) {
@@ -802,6 +688,24 @@ pub fn close(window: &tauri::Window, event: &tauri::WindowEvent) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn dashboard_exposes_quotas_and_ports_without_agent_tracking() {
+        let directory = tempfile::tempdir().unwrap();
+        let data = Runtime::new(directory.path().join("settings.json")).snapshot();
+        assert!(data["providers"].is_array());
+        assert!(data["ports"].is_array());
+        for removed in [
+            "sessions",
+            "cursorTracking",
+            "sessionsUpdatedAt",
+            "sessionsError",
+        ] {
+            assert!(
+                data.get(removed).is_none(),
+                "Removed agent field: {removed}"
+            );
+        }
+    }
     #[test]
     fn old_settings_are_validated_and_ghost_never_auto_enables() {
         let result = settings_from(
