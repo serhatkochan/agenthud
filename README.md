@@ -58,4 +58,4 @@ pnpm package
 
 `AGENTHUD_PROFILE_DIR` ayrı uygulama profili, `AGENTHUD_CURSOR_DIRECTORY` ayrı Cursor gözlemci klasörü içindir. Yalnızca açıkça ayrı profil seçilmişken `AGENTHUD_DEBUG_PORT` test WebView2 bağlantısını açabilir. Normal çalışmada bu bağlantı açılmaz.
 
-Mimari ve kapsam `docs/SPEC.md`, son kanıtlar `docs/VERIFICATION.md`, kabul sınırları `docs/ACCEPTANCE.md` içindedir. Electron 0.6.0 geçmişi Git'te `091173b` ve eski sürüm dosyalarında korunur. Sağlayıcı erişim yolları herkese açık, garantili API sözleşmeleri değildir; sağlayıcı güncellemelerinde değişebilir.
+Mimari ve kapsam `docs/SPEC.md`, son kanıtlar `docs/VERIFICATION.md`, kabul sınırları `docs/ACCEPTANCE.md` içindedir. Çalışma klasöründe yalnızca güncel Tauri projesi ve 0.7.0 Windows paketleri tutulur; eski sürümler Git geçmişindedir. Derleme ve bağımlılık klasörleri yeniden üretilebilir: temiz bir kopyada önce `pnpm install` çalıştır. Sağlayıcı erişim yolları herkese açık, garantili API sözleşmeleri değildir; sağlayıcı güncellemelerinde değişebilir.

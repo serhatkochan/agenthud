@@ -10,7 +10,7 @@
 4. Tauri pencere, tepsi, kısayol, sabitleme, hayalet modu ve ayarları bağla. Mevcut ayarları oku; kullanıcı oturum dosyalarına ve açık uygulamalara müdahale etme.
 5. Rust testleri, üretim derlemesi, gerçek WebView2 ekran/tıklama kontrolleri ve Windows paketi. Yeni sürüm Electron veya Node yan süreç çalıştırmayacak.
 
-Geri dönüş: önceki Electron 0.6.0 sürümü Git'te `091173b` ve `release/` altında korunur. Yeni sürüm ayrı dalda geliştirilir. Hesap verileri taşınmaz; mevcut araçların yerel girişleri salt okunur kullanılır. Hayalet modu açılışta kapalıdır.
+Önceki sürüm Git'te `091173b` ile bulunabilir; eski Electron paketleri ve rapor arşivi çalışma klasöründen kaldırıldı. `release/` yalnızca güncel Tauri paketlerini içerir. Hesap verileri taşınmaz; mevcut araçların yerel girişleri salt okunur kullanılır. Hayalet modu açılışta kapalıdır.
 
 ## Modül sınırları
 

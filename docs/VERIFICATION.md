@@ -1,6 +1,6 @@
 # AgentHUD 0.7.0 · Rust + Tauri kontrol kaydı
 
-18 Ekim 2026. Önceki Electron kanıtları `archive/ELECTRON-0.6-VERIFICATION.md` içinde tarihsel kayıt olarak korunur.
+18 Ekim 2026. Bu kayıt güncel Rust + Tauri sürümüne aittir. Eski Electron paketleri ve rapor arşivi çalışma klasöründen kaldırıldı; geçmişleri Git'te bulunabilir.
 
 ## Kaynak ve test
 
@@ -24,7 +24,7 @@ Geliştirme EXE'sinde geçen kontroller:
 - Hayalet modu gerçek `WS_EX_TRANSPARENT` bayrağı ve maskot alanına göre kontrol edildi; kapatınca etkileşim geri geldi. Küçültme, gizleme ve tekrar gösterme gerçek native bayraklarla geçti.
 - Görünüm geçişindeki Ghost kilidi/Tauri ana iş parçacığı bekleşmesi bulundu ve düzeltildi. Aynı uçtan uca kontrol düzeltmeden sonra geçti. Ayrılmış maskot DOM elemanının boş dikdörtgen bildirimi de düzeltildi; son çalışmada renderer sayfa hatası yok.
 
-Yerel görüntüler `.cache/tauri-dashboard.png`, `tauri-agents.png`, `tauri-focus-choices.png`, `tauri-panel.png`, `tauri-compact.png`, `tauri-settings-380.png`; makine sonucu `.cache/tauri-ui-result.json` içindedir. Canlı kullanım ve proje bilgisi içerebildikleri için Git dışında tutulur.
+Bu kontrollerde oluşan ekran görüntüleri, makine sonuçları ve geçici profiller çalışma klasörü temizliğinde silindi. Tekrar üretmek için README'deki derleme ve `pnpm test:ui` adımlarını kullan; yeni çıktılar `.cache/` altında oluşur. Canlı kullanım ve proje bilgisi içerebildikleri için Git dışında tutulur.
 
 ## Dağıtım
 
@@ -37,7 +37,7 @@ Son üretim kontrolünde kendi Node TCP test sunucusu arayüzden durdurulup yeni
 | `release/AgentHUD-0.7.0-Setup.exe` | 4.188.898 bayt | `42bdb99f79b7abed6ca4f6f48ff2660d5588d28fe13b340bfe984962587f14d9` |
 | `release/AgentHUD-0.7.0-Windows.exe` | 15.228.416 bayt | `84306f0edd884f0b29e7febf69f660a2d803ddb9f9966087eb2b047aa168db68` |
 
-İki dosyanın imzası `NotSigned`. Kurulumun kullanıcı hesabına gerçekten kurulması bu geliştirme kontrolünde yapılmadı; yükleyici üretildi ve onun paketlediği uygulama EXE'si çalıştırıldı. Kopyalanmış son EXE'de `--live-check` tekrar **Cursor 2 / Antigravity 5 / Codex 1, üçü bağlı** döndürdü. SHA256 kaydı `release/SHA256SUMS.txt` içine eski sürümler korunarak eklendi.
+İki dosyanın imzası `NotSigned`. Kurulumun kullanıcı hesabına gerçekten kurulması bu geliştirme kontrolünde yapılmadı; yükleyici üretildi ve onun paketlediği uygulama EXE'si çalıştırıldı. Kopyalanmış son EXE'de `--live-check` tekrar **Cursor 2 / Antigravity 5 / Codex 1, üçü bağlı** döndürdü. `release/SHA256SUMS.txt` yalnızca mevcut iki Tauri paketinin doğrulama değerlerini içerir.
 
 ## Kabul sınırları
 
