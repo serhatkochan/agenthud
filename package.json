@@ -1,0 +1,54 @@
+{
+  "name": "agenthud",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI araçlarının kullanım hakları için yerel masaüstü paneli",
+  "type": "module",
+  "main": "electron/main.mjs",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "desktop": "node scripts/start-desktop.mjs",
+    "build": "tsc -b && vite build",
+    "test": "node --test tests/*.test.mjs",
+    "package": "pnpm build && electron-builder --win portable",
+    "live-check": "node scripts/live-check.mjs",
+    "test:ui": "node scripts/verify-ui.mjs",
+    "test:ports": "node scripts/verify-ports.mjs"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@vitejs/plugin-react": "latest",
+    "electron": "44.9.0",
+    "electron-builder": "latest",
+    "playwright": "^1.64.1",
+    "prettier": "^3.9.10",
+    "typescript": "latest",
+    "vite": "8.3.4"
+  },
+  "build": {
+    "appId": "com.agenthud.desktop",
+    "productName": "AgentHUD",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/icon.png",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "portable",
+      "signExecutable": false,
+      "icon": "assets/icon.ico"
+    },
+    "portable": {
+      "artifactName": "AgentHUD-${version}-Windows.exe"
+    }
+  }
+}

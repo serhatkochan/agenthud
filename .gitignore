@@ -1,0 +1,11 @@
+node_modules/
+dist/
+release/
+.research/
+.cache/
+*.log
+*.local
+.env*
+!.env.example
+.pnpm-store/
+*.tsbuildinfo
