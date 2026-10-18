@@ -9,3 +9,5 @@ release/
 !.env.example
 .pnpm-store/
 *.tsbuildinfo
+src-tauri/target/
+src-tauri/gen/schemas/
