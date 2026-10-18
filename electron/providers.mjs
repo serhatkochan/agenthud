@@ -1,8 +1,6 @@
 import { DatabaseSync } from "node:sqlite";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import https from "node:https";
-import http from "node:http";
 import { createHash } from "node:crypto";
 import {
   parseCursor,
@@ -10,7 +8,7 @@ import {
   parseCodex,
   parseAntigravity,
 } from "./quota.mjs";
-import { flag } from "./system.mjs";
+import { languageServers, postLanguageServer } from "./antigravity-client.mjs";
 
 export const providerMeta = [
   {
@@ -92,51 +90,6 @@ async function json(url, headers = {}, customFetch = fetch) {
       "Sağlayıcıdan beklenen kullanım bilgisi alınamadı.",
     );
   }
-}
-function localPost(port, token, method, secure = true) {
-  return new Promise((resolve, reject) => {
-    const body = JSON.stringify({
-      metadata: {
-        ideName: "antigravity",
-        extensionName: "antigravity",
-        ideVersion: "unknown",
-        locale: "en",
-      },
-    });
-    const req = (secure ? https : http).request(
-      {
-        hostname: "127.0.0.1",
-        port,
-        path: `/exa.language_server_pb.LanguageServerService/${method}`,
-        method: "POST",
-        rejectUnauthorized: false,
-        headers: {
-          "content-type": "application/json",
-          "content-length": Buffer.byteLength(body),
-          "Connect-Protocol-Version": "1",
-          "X-Codeium-Csrf-Token": token,
-        },
-      },
-      (res) => {
-        let result = "";
-        res.on("data", (chunk) => {
-          result += chunk;
-          if (result.length > 2 * 1024 * 1024) req.destroy();
-        });
-        res.on("end", () => {
-          try {
-            if (res.statusCode !== 200) throw new Error();
-            resolve(JSON.parse(result));
-          } catch {
-            reject(new Error("local-api"));
-          }
-        });
-      },
-    );
-    req.setTimeout(1600, () => req.destroy());
-    req.on("error", reject);
-    req.end(body);
-  });
 }
 export function readCursorToken(appData = process.env.APPDATA) {
   let db;
@@ -278,36 +231,13 @@ export async function fetchClaude(browserFetch, browserScope) {
   });
 }
 export async function fetchAntigravity(system) {
-  const candidates = system.processes.filter(
-    (p) =>
-      /language.?server/i.test(p.Name) &&
-      /antigravity/i.test(
-        (p.CommandLine ?? "") + " " + (p.ExecutablePath ?? ""),
-      ),
-  );
+  const candidates = languageServers(system);
   if (!candidates.length)
     throw new ProviderError(
       "local",
       "Antigravity’yi aç ve hesabına giriş yap.",
     );
-  for (const p of candidates) {
-    const token = flag(p.CommandLine, "csrf_token");
-    if (!token) continue;
-    const ports = [
-      ...new Set(
-        system.listeners
-          .filter((x) => x.pid === p.ProcessId)
-          .map((x) => x.port),
-      ),
-    ].slice(0, 12);
-    const targets = ports.map((port) => ({ port, token, secure: true }));
-    const fallback = Number(flag(p.CommandLine, "extension_server_port"));
-    if (fallback)
-      targets.push({
-        port: fallback,
-        token: flag(p.CommandLine, "extension_server_csrf_token") ?? token,
-        secure: false,
-      });
+  for (const { targets } of candidates) {
     for (const method of [
       "RetrieveUserQuotaSummary",
       "GetUserStatus",
@@ -315,7 +245,7 @@ export async function fetchAntigravity(system) {
     ]) {
       const outcomes = await Promise.allSettled(
         targets.map(async (t) => {
-          const data = await localPost(t.port, t.token, method, t.secure);
+          const data = await postLanguageServer(t, method);
           const quotas = parseAntigravity(data);
           return quotas.length
             ? { quotas, source: "Antigravity · yerel servis" }
