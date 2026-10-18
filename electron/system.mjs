@@ -34,26 +34,30 @@ export function parseNetstat(text) {
     return m ? [{ address: m[1], port: Number(m[2]), pid: Number(m[3]) }] : [];
   });
 }
+export async function readProcesses({ agentsOnly = false } = {}) {
+  if (process.platform !== "win32") return [];
+  const filter = agentsOnly
+    ? " AND (Name='Cursor.exe' OR Name='Antigravity.exe' OR Name='claude.exe' OR Name='Codex.exe' OR Name LIKE 'language%server%')"
+    : "";
+  const json = await powershell(
+    `$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter "SessionId=$sid${filter}" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,CreationDate,@{Name="CreationId";Expression={$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString([System.Globalization.CultureInfo]::InvariantCulture)}}) | ConvertTo-Json -Compress -Depth 3`,
+  );
+  const decoded = JSON.parse(json || "[]");
+  return Array.isArray(decoded) ? decoded : decoded ? [decoded] : [];
+}
 export async function inventory({
   workingDirectories = true,
   agentsOnly = false,
 } = {}) {
   if (process.platform !== "win32") return { processes: [], listeners: [] };
-  const filter = agentsOnly
-    ? " AND (Name='Cursor.exe' OR Name='Antigravity.exe' OR Name='claude.exe' OR Name='Codex.exe' OR Name LIKE 'language%server%')"
-    : "";
-  const [json, netstat] = await Promise.all([
-    powershell(
-      `$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter "SessionId=$sid${filter}" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,CreationDate,@{Name="CreationId";Expression={$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString([System.Globalization.CultureInfo]::InvariantCulture)}}) | ConvertTo-Json -Compress -Depth 3`,
-    ),
+  const [processes, netstat] = await Promise.all([
+    readProcesses({ agentsOnly }),
     exec("netstat.exe", ["-ano", "-p", "tcp"], {
       windowsHide: true,
       timeout: 10000,
       maxBuffer: 4 * 1024 * 1024,
     }),
   ]);
-  const decoded = JSON.parse(json || "[]");
-  const processes = Array.isArray(decoded) ? decoded : decoded ? [decoded] : [];
   const listeners = parseNetstat(netstat.stdout);
   if (!workingDirectories) return { processes, listeners };
   const candidates = processes.filter(
