@@ -33,15 +33,13 @@ test("session discovery retains cwd when a large metadata header precedes events
       }) +
       "\n",
   );
-  const prior = process.env.CODEX_HOME;
-  process.env.CODEX_HOME = home;
-  try {
-    const sessions = await readSessions({ processes: [] });
+  {
+    const sessions = await readSessions(
+      { processes: [], listeners: [] },
+      { codexHome: home },
+    );
     assert.equal(sessions[0]?.project, "sample");
     assert.equal(sessions[0]?.state, "working");
-  } finally {
-    if (prior === undefined) delete process.env.CODEX_HOME;
-    else process.env.CODEX_HOME = prior;
   }
 });
 test("listener discovery deduplicates address families in the port manager", async () => {

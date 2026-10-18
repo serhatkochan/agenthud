@@ -24,6 +24,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 let win,
   tray,
   timer,
+  sessionTimer,
+  sessionRefresh,
   refreshing,
   quitting = false;
 const loginWindows = new Map();
@@ -40,6 +42,8 @@ let state = {
   providers: providerMeta.map((p) => ({ ...p, status: "loading", quotas: [] })),
   ports: [],
   sessions: [],
+  sessionsUpdatedAt: null,
+  sessionsError: null,
   settings,
   mode: "dashboard",
   refreshing: false,
@@ -66,6 +70,33 @@ const getProvider = (id) => {
   return p;
 };
 
+async function refreshSessions(system) {
+  if (sessionRefresh) return sessionRefresh;
+  sessionRefresh = (async () => {
+    const current =
+      system ||
+      (await inventory({ workingDirectories: false, agentsOnly: true }));
+    state.sessions = await readSessions(current);
+    state.sessionsUpdatedAt = Date.now();
+    state.sessionsError = null;
+  })()
+    .catch(() => {
+      state.sessions = state.sessions.map((s) => ({
+        ...s,
+        state: "unknown",
+        statusLabel: "Son kontrol başarısız",
+        stale: true,
+      }));
+      state.sessionsError =
+        "Ajan durumları okunamadı. Son görülen oturumlar gösteriliyor.";
+    })
+    .finally(() => {
+      sessionRefresh = null;
+      notify();
+    });
+  return sessionRefresh;
+}
+
 async function refresh() {
   if (refreshing) return refreshing;
   state.refreshing = true;
@@ -78,8 +109,9 @@ async function refresh() {
     } catch {
       state.systemError = "Süreç ve port bilgileri okunamadı.";
     }
-    await Promise.all(
-      providerMeta.map(async (meta) => {
+    await Promise.all([
+      refreshSessions(state.systemError ? undefined : system),
+      ...providerMeta.map(async (meta) => {
         const partition = session.fromPartition(`persist:agenthud-${meta.id}`);
         const cookies =
           meta.id === "claude" || meta.id === "cursor"
@@ -132,10 +164,9 @@ async function refresh() {
         );
         notify();
       }),
-    );
+    ]);
     if (!state.systemError) {
       state.ports = await portManager.scan(system);
-      state.sessions = await readSessions(system);
     }
     state.refreshing = false;
     state.refreshedAt = Date.now();
@@ -325,6 +356,7 @@ async function createWindow() {
     },
   );
   setupTimer();
+  sessionTimer = setInterval(() => void refreshSessions(), 5000);
   void refresh();
 }
 
@@ -412,6 +444,7 @@ else {
 app.on("before-quit", () => {
   quitting = true;
   clearInterval(timer);
+  clearInterval(sessionTimer);
   globalShortcut.unregisterAll();
 });
 app.on("window-all-closed", () => {});

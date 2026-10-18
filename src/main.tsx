@@ -34,6 +34,17 @@ function age(at: number | undefined, now: number) {
     ? "Az önce güncellendi"
     : `${Math.floor(seconds / 60)} dk önce güncellendi`;
 }
+function activityAge(at: number, now: number) {
+  if (!at) return "";
+  const minutes = Math.max(0, Math.floor((now - at) / 60000));
+  return minutes < 1
+    ? "Son etkinlik az önce"
+    : minutes < 60
+      ? `Son etkinlik ${minutes} dk önce`
+      : minutes < 1440
+        ? `Son etkinlik ${Math.floor(minutes / 60)} sa önce`
+        : `Son etkinlik ${Math.floor(minutes / 1440)} gün önce`;
+}
 const health = (q: number) =>
   q < 20 ? "critical" : q < 50 ? "warning" : "healthy";
 const statusText = {
@@ -371,7 +382,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.1</span>
+              AgentHUD <span className="version">/ 0.2</span>
             </div>
             <div className="window-actions">
               <button
@@ -629,7 +640,12 @@ function App() {
                 <section className="list-surface">
                   {s.sessions.length ? (
                     s.sessions.map((a) => (
-                      <div className="session-row" key={a.id}>
+                      <div
+                        className="session-row"
+                        key={a.id}
+                        data-provider={a.provider}
+                        aria-label={`${a.provider} · ${a.project}`}
+                      >
                         <span className={`brand brand-${a.provider}`}>
                           <Brand id={a.provider} />
                         </span>
@@ -639,20 +655,29 @@ function App() {
                             {a.cwd ||
                               "Çalışma durumu için oturum kaydı bulunamadı"}
                           </span>
+                          <span
+                            className="session-source"
+                            title={`${a.source || ""}${a.updatedAt ? ` · ${activityAge(a.updatedAt, now)}` : ""}`}
+                          >
+                            {a.source}
+                            {a.updatedAt
+                              ? ` · ${activityAge(a.updatedAt, now)}`
+                              : ""}
+                          </span>
                         </div>
                         <span className={`agent-state ${a.state}`}>
-                          {
+                          {a.statusLabel ||
                             {
                               working: "Çalışıyor",
                               done: "Tamamlandı",
                               blocked: "Onay bekliyor",
                               idle: "Boşta",
                               unknown: "Durum bilinmiyor",
-                            }[a.state]
-                          }
+                            }[a.state]}
                         </span>
                         <button
                           className="subtle-button"
+                          title="Uygulama penceresini öne getir"
                           onClick={() =>
                             void run(() => bridge.focus(a.provider))
                           }
@@ -674,8 +699,10 @@ function App() {
                     Bir uygulamanın açık olması, ajanın çalıştığı anlamına
                     gelmez. Durumlar yalnızca doğrulanabilen kayıtlardan alınır.
                   </p>
-                  {s.systemError && (
-                    <p className="inline-warning">{s.systemError}</p>
+                  {s.sessionsError && (
+                    <p className="inline-warning" role="status">
+                      {s.sessionsError}
+                    </p>
                   )}
                 </section>
               ) : (
@@ -764,10 +791,20 @@ function App() {
                   <i />
                   Bu cihazda çalışıyor
                 </span>
-                <button onClick={() => setDialog("settings")}>
-                  Her {s.settings.refreshSeconds} saniyede bir yenilenir
-                  <Icon name="settings" size={12} />
-                </button>
+                {tab === "agents" ? (
+                  <span
+                    className="session-poll"
+                    data-checked-at={s.sessionsUpdatedAt || 0}
+                    title={age(s.sessionsUpdatedAt, now)}
+                  >
+                    Ajanlar 5 saniyede bir kontrol edilir
+                  </span>
+                ) : (
+                  <button onClick={() => setDialog("settings")}>
+                    Her {s.settings.refreshSeconds} saniyede bir yenilenir
+                    <Icon name="settings" size={12} />
+                  </button>
+                )}
               </footer>
             </main>
           </div>

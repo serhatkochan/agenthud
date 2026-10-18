@@ -4,7 +4,7 @@ AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yere
 
 ## Çalıştırma
 
-`release/AgentHUD-0.1.1-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.2.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
 `Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Kısayol başka bir uygulamada kullanılıyorsa bu açıklanır ve hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır.
 
@@ -31,7 +31,9 @@ Port yöneticisi geliştirme süreçlerinin TCP LISTEN portlarını, süreç kim
 
 Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur olarak alınır ve süreç oluşturulma kimliğiyle eşleştirilir. Süreç durdurulmadan hemen önce tekrar okunur. Böylece ortak `node_modules` yolundan farklı bir alt klasörde çalışan sunucu aynı klasörde yeniden başlatılır. Windows bu bilgiye erişim vermezse veya yerleşim doğrulanamazsa yeniden başlatma kapalı kalır. Script yolu yalnızca proje adı için yardımcı ipucudur. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
 
-Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Diğer uygulamalar açıkken gösterilir; CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Tüm araçlar için güvenilir Working / Blocked / Done / Idle takibi ve oturumun tam penceresine odaklanma sonraki geliştirme işidir. Herdr entegrasyonu henüz yoktur.
+Antigravity'nin yerel servisinden gerçek proje klasörü ve oturum durumu okunur: Boşta, Çalışıyor, Meşgul veya Durduruluyor. Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Satırlarda veri kaynağı ve son etkinlik zamanı görünür. Ajanlar 5 saniyede bir kontrol edilir; uzak kota servisleri bu sıklıkta sorgulanmaz.
+
+Cursor ve Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir; CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için güvenilir Working / Blocked / Done / Idle takibi ve oturumun tam penceresine odaklanma sonraki geliştirme işidir. Odaklan düğmesi şu anda uygulama penceresini açar. Herdr entegrasyonu henüz yoktur.
 
 ## Geliştirme ve kontroller
 

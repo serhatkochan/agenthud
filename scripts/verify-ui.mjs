@@ -124,6 +124,54 @@ try {
   }
   await page.getByRole("button", { name: /^Ajanlar/ }).click();
   await page.getByRole("heading", { name: "Ajanların ne durumda?" }).waitFor();
+  const agentSnapshot = await page.evaluate(() => window.agenthud.snapshot());
+  assert.equal(agentSnapshot.sessionsError, null);
+  const antigravity = agentSnapshot.sessions.filter(
+    (s) =>
+      s.provider === "antigravity" && s.source === "Antigravity · yerel servis",
+  );
+  assert.ok(
+    antigravity.length > 0,
+    "The running Antigravity service must expose measured sessions on this host",
+  );
+  const antigravityRows = page.locator(
+    '.session-row[data-provider="antigravity"]',
+  );
+  assert.equal(await antigravityRows.count(), antigravity.length);
+  for (const row of antigravity) {
+    const visible = page
+      .locator('.session-row[data-provider="antigravity"]')
+      .filter({ has: page.getByText(row.project, { exact: true }) })
+      .first();
+    assert.equal(
+      await visible
+        .locator(".session-source")
+        .textContent()
+        .then((text) => text.includes("Antigravity · yerel servis")),
+      true,
+    );
+    assert.equal(
+      await visible.locator(".agent-state").textContent(),
+      row.statusLabel,
+    );
+  }
+  const checked = agentSnapshot.sessionsUpdatedAt;
+  await page.waitForFunction(
+    (at) =>
+      Number(
+        document
+          .querySelector(".session-poll")
+          ?.getAttribute("data-checked-at"),
+      ) > at,
+    checked,
+    { timeout: 16000 },
+  );
+  const afterAgentPoll = await page.evaluate(() => window.agenthud.snapshot());
+  assert.deepEqual(
+    afterAgentPoll.providers.map((p) => p.updatedAt),
+    agentSnapshot.providers.map((p) => p.updatedAt),
+    "Fast agent checks must not poll remote quotas",
+  );
   await page.screenshot({ path: ".cache/agents.png" });
   await page.getByRole("button", { name: /^Yerel portlar/ }).click();
   await page
@@ -203,6 +251,15 @@ try {
   await page.getByRole("button", { name: "Ayarları aç", exact: true }).click();
   await page.screenshot({ path: ".cache/panel-settings-380.png" });
   await page.keyboard.press("Escape");
+  await page.getByRole("button", { name: "Ajanlar", exact: true }).click();
+  assert.equal(
+    await page
+      .locator("main")
+      .evaluate((el) => el.scrollWidth > el.clientWidth),
+    false,
+  );
+  await page.screenshot({ path: ".cache/agents-panel-380.png" });
+  await page.getByRole("button", { name: "Kota radarı", exact: true }).click();
   await page.keyboard.press("Tab");
   assert.notEqual(
     await page.evaluate(
@@ -261,6 +318,8 @@ try {
           "settings",
           "escape",
           "agents",
+          "measured-antigravity-sessions",
+          "independent-5s-agent-poll",
           "ports",
           "claude-dialog",
           "compact",
@@ -271,6 +330,7 @@ try {
           "notification-and-startup-settings",
           "ghost-mode-and-shortcut-registration",
           "380px-layout",
+          "380px-agent-layout",
           "keyboard-focus",
           "native-minimize",
           "hide-to-tray",

@@ -12,7 +12,11 @@ Açık uygulamanın yerel language server'ında `GetAllCascadeTrajectories` iste
 - `workspaces[].workspaceFolderAbsoluteUri`: proje klasörünün `file:` URI'si.
 - `trajectoryMetadata.workspaces` ve `workspaceUris`: alternatif proje alanları.
 
-Bu yanıtla gerçek Idle ve proje bilgisi alınabilir. Diğer durum enumları henüz kurulu uygulamanın şemasıyla doğrulanmadı; RUNNING veya onay bekleme durumu tahmin edilmemeli. İstek ve yanıt incelemesi `.research/agent-probe.mjs` içinde, istem/yanıt ve başlık metinleri maskelenerek yapıldı. Kimlik bilgileri rapora yazılmadı.
+Kurulu language server ikilisinde `CASCADE_RUN_STATUS_IDLE`, `BUSY`, `RUNNING`, `CANCELING` ve `UNSPECIFIED` enum adları doğrulandı. Idle → Boşta, Busy → Meşgul, Running → Çalışıyor, Canceling → Durduruluyor eşleştirmesi kullanılıyor. Bilinmeyen değerler, UNSPECIFIED dahil, bilinmiyor olarak kalır. Ayrı bir onay bekleme veya tamamlandı durumu gözlenmedi; Idle tamamlanma kanıtı sayılmaz.
+
+`electron/antigravity-client.mjs` bu kaynağı 5 saniyelik ajan kontrolüne bağlar. Birden fazla language server'dan gelen oturumlar kimlikle birleştirilir; yeni kayıt tercih edilir. Proje `file:` URI'sinden alınır. İstem, yanıt ve sohbet başlıkları arayüze aktarılmaz. Yerel istek 1.6 saniye ve 4 MiB ile sınırlıdır; yönlendirme izlenmez. Servis okunamazsa süreç satırı çalışma durumu bilinmiyor olarak gösterilir.
+
+İstek ve yanıt incelemesi `.research/agent-probe.mjs` içinde, istem/yanıt ve başlık metinleri maskelenerek yapıldı. Kimlik bilgileri rapora yazılmadı. Gerçek uygulamada iki Idle oturumu ve proje klasörleri görüldü; çalışan/onay bekleyen bir kullanıcı oturumu test amacıyla başlatılmadı. Diğer enum eşleştirmeleri yerel yanıt örnekleriyle test edildi.
 
 Resmi [Antigravity hooks belgesi](https://antigravity.google/docs/hooks), `SessionStart`, `PreInvocation`, `PreToolUse`, `PostToolUse` ve `Stop` olaylarını tanımlıyor. `Stop.fullyIdle` ile arka plan işlerinin bitişi ayrılabiliyor. Bu belgede genel bir onay bekleme olayı görülmedi. Gözlem entegrasyonu, onay kararına müdahale eden çıktı üretmemeli.
 

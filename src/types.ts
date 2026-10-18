@@ -38,6 +38,10 @@ export interface AgentSession {
   state: "working" | "done" | "blocked" | "idle" | "unknown";
   cwd: string;
   updatedAt: number;
+  source?: string;
+  statusLabel?: string;
+  observedAt?: number;
+  stale?: boolean;
 }
 export interface Settings {
   alwaysOnTop: boolean;
@@ -56,6 +60,8 @@ export interface Snapshot {
   systemError?: string;
   refreshedAt?: number;
   shortcutAvailable: boolean;
+  sessionsUpdatedAt?: number;
+  sessionsError?: string;
 }
 export interface Result {
   ok?: boolean;

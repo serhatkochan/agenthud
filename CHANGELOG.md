@@ -1,5 +1,11 @@
 # Değişiklikler
 
+## 0.2.0 · 18 Ekim 2026
+
+- Antigravity'nin gerçek oturumları, proje klasörleri ve servis durumları ajan ekranına bağlandı. Süreç varlığı ile ölçülen çalışma durumu ayrı gösterilir.
+- Ajanlar, kota yenileme aralığından bağımsız olarak 5 saniyede bir kontrol edilir. Kaynak ve son etkinlik zamanı görünür.
+- Yerel servis isteklerine toplam süre ve yanıt boyutu sınırı eklendi. Yarıda kesilen, bozuk veya yönlendirilen yanıtlar yenilemeyi askıda bırakmaz.
+
 ## 0.1.1 · 18 Ekim 2026
 
 - Windows portları, komutun bulunduğu dizin yerine doğrulanan gerçek çalışma klasöründe yeniden başlatılır. Ortak `node_modules`, Türkçe klasör adı ve boşluk içeren yol gerçek sunucuyla test edildi.

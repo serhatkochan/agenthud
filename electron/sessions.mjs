@@ -1,6 +1,7 @@
 import { readdir, stat, open } from "node:fs/promises";
 import { join, basename } from "node:path";
 import { powershell } from "./system.mjs";
+import { readAntigravitySessions } from "./antigravity-client.mjs";
 
 async function latestFiles(root, depth) {
   if (depth < 0) return [];
@@ -15,8 +16,10 @@ async function latestFiles(root, depth) {
     const path = join(root, e.name);
     if (e.isDirectory()) files.push(...(await latestFiles(path, depth - 1)));
     else if (e.name.endsWith(".jsonl")) {
-      const s = await stat(path);
-      files.push({ path, time: s.mtimeMs });
+      try {
+        const s = await stat(path);
+        files.push({ path, time: s.mtimeMs });
+      } catch {}
     }
   }
   return files.sort((a, b) => b.time - a.time).slice(0, 8);
@@ -72,16 +75,26 @@ export function codexState(events) {
     state = "unknown";
   return { state, cwd, updatedAt };
 }
-export async function readSessions(system) {
-  const result = [];
-  const files = await latestFiles(
-    join(
-      process.env.CODEX_HOME || join(process.env.USERPROFILE, ".codex"),
-      "sessions",
-      ...new Date().toISOString().slice(0, 10).split("-"),
+export async function readSessions(
+  system,
+  {
+    codexHome = process.env.CODEX_HOME ||
+      join(process.env.USERPROFILE, ".codex"),
+  } = {},
+) {
+  const [antigravity, files] = await Promise.all([
+    readAntigravitySessions(system),
+    latestFiles(
+      join(
+        codexHome,
+        "sessions",
+        ...new Date().toISOString().slice(0, 10).split("-"),
+      ),
+      0,
     ),
-    0,
-  );
+  ]);
+  const result = [...antigravity];
+  const observedAt = Date.now();
   for (const file of files) {
     if (Date.now() - file.time > 24 * 3600000) continue;
     try {
@@ -92,6 +105,8 @@ export async function readSessions(system) {
         provider: "codex",
         project: basename(s.cwd),
         ...s,
+        source: "Codex · yerel oturum",
+        observedAt,
       });
     } catch {}
   }
@@ -103,7 +118,7 @@ export async function readSessions(system) {
     const running = system.processes.some(
       (x) => x.Name.toLowerCase() === name.toLowerCase(),
     );
-    if (running)
+    if (running && !result.some((s) => s.provider === provider))
       result.push({
         id: provider,
         provider,
@@ -111,9 +126,15 @@ export async function readSessions(system) {
         state: "unknown",
         cwd: "",
         updatedAt: 0,
+        source: "Yalnızca uygulama süreci",
+        observedAt,
       });
   }
-  return result.slice(0, 10);
+  const priority = { blocked: 0, working: 1, done: 2, idle: 3, unknown: 4 };
+  return result.sort(
+    (a, b) =>
+      priority[a.state] - priority[b.state] || b.updatedAt - a.updatedAt,
+  );
 }
 export async function focusProvider(provider) {
   const names = {
