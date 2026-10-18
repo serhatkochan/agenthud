@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import "./styles.css";
 import { CursorTracking } from "./CursorTracking";
+import { FocusButton } from "./FocusButton";
 
 const pretty = (v: number) =>
   new Intl.NumberFormat("tr-TR", {
@@ -416,7 +417,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.4</span>
+              AgentHUD <span className="version">/ 0.5</span>
             </div>
             <div className="window-actions">
               <button
@@ -729,16 +730,11 @@ function App() {
                               unknown: "Durum bilinmiyor",
                             }[a.state]}
                         </span>
-                        <button
-                          className="subtle-button"
-                          title="Uygulama penceresini öne getir"
-                          onClick={() =>
-                            void run(() => bridge.focus(a.provider))
-                          }
-                        >
-                          Odaklan
-                          <Icon name="arrow" size={13} />
-                        </button>
+                        <FocusButton
+                          session={a}
+                          onFocus={(id, choice) => bridge.focus(id, choice)}
+                          onError={announce}
+                        />
                       </div>
                     ))
                   ) : (

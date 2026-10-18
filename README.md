@@ -4,7 +4,7 @@ AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yere
 
 ## Çalıştırma
 
-`release/AgentHUD-0.4.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.5.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
 `Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Bu kısayol doluysa `Ctrl + Alt + H`, ardından `Ctrl + Shift + G` denenir. Etkin kısayol ayarlarda görünür. Hiçbiri kullanılamıyorsa hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır ve görünüm değişimlerinde korunur.
 
@@ -37,7 +37,9 @@ Antigravity'nin yerel servisinden gerçek proje klasörü ve oturum durumu okunu
 
 Cursor için **Ajanlar > Cursor durum takibi > Bağla** seçeneğini kullanabilirsin. Değişecek dosya ve saklanacak bilgiler gösterilir; Takibi etkinleştir mevcut kullanıcı kancalarını koruyup özgün dosyayı yedekler. Düşünce/yanıt olayı Çalışıyor, bitiş olayı Tamamlandı olarak görünür. İlk olay gelene kadar bağlantı bekliyor durumundadır. Takibi kapat yalnızca AgentHUD gözlemcisini kaldırır. Bozuk veya bilinmeyen sürümlü ayarlar değiştirilmez. Sohbet içeriği ve komutlar kaydedilmez; izin kancalarına ekleme yapılmaz. Ayrıntı `docs/CURSOR-TRACKING.md` içinde.
 
-Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır. Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir. CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için onay bekleme takibi ve oturumun tam penceresine odaklanma açık işlerdir. Odaklan düğmesi şu anda uygulama penceresini açar. Herdr entegrasyonu henüz yoktur.
+Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır. Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir. CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için onay bekleme takibi açık iştir. Herdr entegrasyonu henüz yoktur.
+
+**Odaklan**, başlıktaki çalışma alanı adı tek bir pencereyle eşleşiyorsa onu açar. Birden fazla eşleşme veya belirsiz pencere varsa seçim listesi gösterir. Tek uygulama penceresi doğrudan açılır; genel bir ajan penceresinde sohbet sekmesinin de seçildiği iddia edilmez. Küçültülmüş pencere geri yüklenir, HUD küçük çubuğa döner. Kapanan veya değişen seçim reddedilir; liste yenilenebilir. Pencere başlığı tam proje yolu kanıtı değildir. Ayrıntı `docs/WINDOW-FOCUS.md` içinde.
 
 ## Geliştirme ve kontroller
 
@@ -51,6 +53,7 @@ pnpm test:ui
 pnpm test:ports
 pnpm test:ghost
 pnpm test:cursor
+pnpm test:focus
 pnpm live-check
 pnpm package
 ```
@@ -58,6 +61,8 @@ pnpm package
 `pnpm dev` sadece tarayıcıdaki arayüz önizlemesini açar. Tarayıcı önizlemesi gerçekmiş gibi örnek kota göstermez; yerel bağlantılar masaüstü uygulamasındadır.
 
 `test:cursor`, gerçek PowerShell gözlemcisini resmî biçimdeki örnek olaylarla ayrı bir Cursor klasöründe çalıştırır; çalışma/bitiş, bağlantıyı kaldırma ve hatalı yapılandırma akışlarını arayüzde kontrol eder. `AGENTHUD_CURSOR_DIRECTORY` yalnızca bu testlerin veya alternatif yerel profilin hedefini belirler; varsayılan kullanıcının `.cursor` klasörüdür.
+
+`test:focus`, ayrı bir süreçteki iki test penceresinde gerçek Windows ön plan sonucunu okur. Kullanıcının IDE pencerelerine odaklanmaz. Başlık eşleşmesi, seçim, küçültülmüş pencereyi geri getirme, kapanan pencereyi reddetme ve dar seçim diyaloğu kapsanır.
 
 `test:ui` gerçek Electron penceresini açar, canlı ölçümlerin tamamlanmasını bekler ve arayüzü tıklar. `test:ports` kendi geçici sunucusunu açar, durdurur ve yeniden başlatır; mevcut sunuculara dokunmaz. `test:ghost`, ayrı profilinde pencerenin gerçek Windows tıklama geçişi bayrağını ve maskot istisnasını kontrol eder. Fiziksel klavyede Alt basılı tutma bu otomatik kontrolün kapsamı değildir. Canlı kontroller Windows süreçlerine ve ağa erişim gerektirir. Görüntüler ve test çıktıları `.cache/` altında tutulur, Git'e eklenmez.
 

@@ -7,7 +7,8 @@ contextBridge.exposeInMainWorld("agenthud", {
   setSettings: (patch) => ipcRenderer.invoke("hud:settings", patch),
   window: (action) => ipcRenderer.invoke("hud:window", action),
   port: (action, key) => ipcRenderer.invoke("hud:port", action, key),
-  focus: (provider) => ipcRenderer.invoke("hud:focus", provider),
+  focus: (sessionId, choiceId) =>
+    ipcRenderer.invoke("hud:focus", sessionId, choiceId),
   hotspot: (rectangle) => ipcRenderer.invoke("hud:hotspot", rectangle),
   tracking: (provider, enabled) =>
     ipcRenderer.invoke("hud:tracking", provider, enabled),

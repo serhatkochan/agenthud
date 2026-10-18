@@ -1,6 +1,5 @@
 import { readdir, stat, open } from "node:fs/promises";
 import { join, basename } from "node:path";
-import { powershell } from "./system.mjs";
 import { readAntigravitySessions } from "./antigravity-client.mjs";
 
 async function latestFiles(root, depth) {
@@ -136,19 +135,4 @@ export async function readSessions(
     (a, b) =>
       priority[a.state] - priority[b.state] || b.updatedAt - a.updatedAt,
   );
-}
-export async function focusProvider(provider) {
-  const names = {
-    cursor: "Cursor",
-    antigravity: "Antigravity",
-    claude: "Claude",
-    codex: "Codex",
-  };
-  const name = names[provider];
-  if (!name) throw new Error("Uygulama bulunamadı.");
-  const output = await powershell(
-    `$p=Get-Process -Name '${name}' -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 } | Select-Object -First 1; if(!$p){throw 'missing'}; Add-Type -TypeDefinition 'using System; using System.Runtime.InteropServices; public class HudFocus { [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h); [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr h, int c); }'; [HudFocus]::ShowWindow($p.MainWindowHandle,9) | Out-Null; [HudFocus]::SetForegroundWindow($p.MainWindowHandle)`,
-  );
-  if (output !== "True")
-    throw new Error("Pencere öne getirilemedi. Görev çubuğundan açabilirsin.");
 }

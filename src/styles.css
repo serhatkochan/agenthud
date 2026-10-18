@@ -1117,6 +1117,49 @@ body:has(.mode-compact) {
   border-top: 1px solid var(--line);
   padding-top: 10px;
 }
+.focus-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 280px;
+  overflow: auto;
+  margin: 16px 0;
+}
+.focus-choice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  text-align: left;
+  padding: 13px;
+  background: #242e27;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+.focus-choice:hover {
+  background: #303c33;
+  border-color: #6d8a75;
+}
+.focus-choice span {
+  min-width: 0;
+}
+.focus-choice strong {
+  display: block;
+  font-size: 12px;
+  line-height: 1.6;
+  font-weight: 550;
+  overflow-wrap: anywhere;
+}
+.focus-choice small {
+  display: block;
+  font-size: 10px;
+  line-height: 1.6;
+  margin-top: 4px;
+  color: var(--muted);
+}
+.focus-choice svg {
+  flex-shrink: 0;
+}
 .subtle-button {
   display: inline-flex;
   align-items: center;

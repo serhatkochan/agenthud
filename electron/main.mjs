@@ -18,7 +18,9 @@ import { providerMeta, readProvider, accountScope } from "./providers.mjs";
 import { mergeRefresh } from "./quota.mjs";
 import { inventory } from "./system.mjs";
 import { PortManager } from "./ports.mjs";
-import { readSessions, focusProvider } from "./sessions.mjs";
+import { readSessions } from "./sessions.mjs";
+import { FocusService } from "./focus.mjs";
+import { windowLayout } from "./window-layout.mjs";
 import { GhostMode, registerRecoveryShortcut } from "./ghost.mjs";
 import { loadAltReader } from "./windows-input.mjs";
 import { CursorTracker } from "./cursor-tracking.mjs";
@@ -36,6 +38,7 @@ let win,
   quitting = false;
 const loginWindows = new Map();
 const portManager = new PortManager();
+const focusService = new FocusService();
 const defaults = {
   alwaysOnTop: false,
   refreshSeconds: 60,
@@ -209,36 +212,17 @@ function applyMode(mode, peekAnchor) {
   const previousMode = state.mode;
   const previous = win.getBounds();
   state.mode = mode;
-  const size =
-    mode === "compact"
-      ? [420, 48]
-      : mode === "panel"
-        ? [420, 720]
-        : [1120, 940];
-  win.setMinimumSize(
-    mode === "dashboard" ? 760 : 380,
-    mode === "compact" ? 48 : 540,
-  );
-  win.setSize(...size, true);
-  if (mode !== "dashboard") {
-    const anchor = peekAnchor || previous;
-    const work = screen.getDisplayMatching(anchor).workArea;
-    const x = peekAnchor
-      ? anchor.x
-      : previousMode === "dashboard"
-        ? work.x + work.width - size[0] - 24
-        : previous.x + previous.width - size[0];
-    const y = peekAnchor
-      ? anchor.y
-      : previousMode === "dashboard"
-        ? work.y + 24
-        : previous.y;
-    win.setPosition(
-      Math.max(work.x, Math.min(x, work.x + work.width - size[0])),
-      Math.max(work.y, Math.min(y, work.y + work.height - size[1])),
-      true,
-    );
-  }
+  const work = screen.getDisplayMatching(peekAnchor || previous).workArea;
+  const layout = windowLayout({
+    mode,
+    previousMode,
+    previous,
+    work,
+    peekAnchor,
+  });
+  win.setMinimumSize(...layout.minimum);
+  win.setSize(...layout.size, true);
+  win.setPosition(...layout.position, true);
   applyPin();
   notify();
 }
@@ -523,10 +507,20 @@ handle("hud:tracking", async (provider, enabled) => {
     };
   }
 });
-handle("hud:focus", async (provider) => {
-  getProvider(provider);
-  await focusProvider(provider);
-  return { ok: true };
+handle("hud:focus", async (sessionId, choiceId) => {
+  const selected =
+    typeof sessionId === "string"
+      ? state.sessions.find((row) => row.id === sessionId)
+      : null;
+  if (
+    !selected ||
+    (choiceId !== undefined &&
+      (typeof choiceId !== "string" || choiceId.length > 128))
+  )
+    return { ok: false, message: "Bu oturum artık listede değil. Yenile." };
+  const result = await focusService.request(selected, choiceId);
+  if (result.ok && !result.choices) openMode("compact");
+  return result;
 });
 handle("hud:port", async (action, key) => {
   if (typeof key !== "string") throw new Error("Geçersiz port");

@@ -79,6 +79,15 @@ export interface Result {
   ok?: boolean;
   message?: string;
 }
+export interface FocusChoice {
+  id: string;
+  title: string;
+  app: string;
+}
+export interface FocusResult extends Result {
+  choices?: FocusChoice[];
+  scope?: "project" | "application" | "selected";
+}
 export interface Bridge {
   snapshot(): Promise<Snapshot>;
   refresh(): Promise<Snapshot>;
@@ -87,7 +96,7 @@ export interface Bridge {
   setSettings(patch: Partial<Settings>): Promise<Snapshot & Result>;
   window(action: string): Promise<Snapshot>;
   port(action: string, key: string): Promise<Result>;
-  focus(id: ProviderId): Promise<Result>;
+  focus(sessionId: string, choiceId?: string): Promise<FocusResult>;
   tracking(provider: "cursor", enabled: boolean): Promise<Result>;
   hotspot(
     rectangle: { x: number; y: number; width: number; height: number } | null,

@@ -1,5 +1,11 @@
 # Değişiklikler
 
+## 0.5.0 · 18 Ekim 2026
+
+- Odaklan düğmesi oturumun uygulama pencerelerini bulur. Benzersiz çalışma alanı başlığı eşleşmesinde pencereyi açar; belirsiz veya birden fazla eşleşmede seçim gösterir.
+- Süreç ve pencere kimliği yeniden doğrulanır; eski seçimler ve kapanan pencereler reddedilir. Küçültülmüş pencere geri getirilir, başarılı odaklanmada HUD küçülür.
+- Normal görünüme dönüşte pencerenin ekran dışına taşması düzeltildi. Boyut ve konum ekranın çalışma alanına sığdırılır.
+
 ## 0.4.0 · 18 Ekim 2026
 
 - Ajanlar ekranına Cursor durum takibi bağlantısı eklendi. Kullanıcı etkinleştirdiğinde resmî oturum olaylarından proje, çalışma ve bitiş durumu gösterilir.
