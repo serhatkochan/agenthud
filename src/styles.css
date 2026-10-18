@@ -426,10 +426,6 @@ h1 {
   grid-column: 2;
   grid-row: 1 / span 2;
 }
-.provider-claude {
-  grid-column: 1;
-  grid-row: 2;
-}
 .provider-codex {
   grid-column: 2;
   grid-row: 3;
@@ -466,10 +462,6 @@ h1 {
 .brand-antigravity {
   color: #a8b6ff;
   background: #272a3b;
-}
-.brand-claude {
-  color: #e9aa83;
-  background: #382e27;
 }
 .brand-codex {
   color: #a7d8bb;
@@ -874,9 +866,6 @@ h1 {
 }
 .compact-provider.antigravity > svg {
   color: #a8b6ff;
-}
-.compact-provider.claude > svg {
-  color: #e9aa83;
 }
 .compact-provider.codex > svg {
   color: #a7d8bb;
@@ -1588,30 +1577,6 @@ kbd {
   }
   .provider-antigravity {
     grid-row: 1 / span 2;
-  }
-  .provider-claude {
-    grid-column: 1 / span 2;
-    grid-row: 3;
-    display: grid;
-    grid-template-columns: 190px 1fr;
-  }
-  .provider-claude .card-heading {
-    padding: 18px;
-    align-self: start;
-  }
-  .provider-claude .card-footer {
-    grid-column: 1 / span 2;
-  }
-  .provider-claude .connection-empty {
-    padding: 18px 20px 14px;
-    text-align: left;
-  }
-  .provider-claude .connection-empty p {
-    max-width: none;
-    margin: 0 0 10px;
-  }
-  .provider-claude .empty-orbit {
-    display: none;
   }
   .provider-codex .card-heading {
     padding-top: 16px;

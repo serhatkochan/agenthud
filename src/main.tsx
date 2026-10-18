@@ -12,7 +12,7 @@ import type {
   Result,
 } from "./types";
 import "./styles.css";
-import { SessionTracking } from "./SessionTracking";
+import { CursorTracking } from "./CursorTracking";
 import { FocusButton } from "./FocusButton";
 
 const pretty = (v: number) =>
@@ -267,8 +267,14 @@ function App() {
       try {
         const r = (await fn()) as Result;
         if (r?.ok === false) announce(r.message || "İşlem tamamlanamadı.");
-      } catch {
-        announce("İşlem tamamlanamadı. Yeniden dene.");
+      } catch (error) {
+        announce(
+          typeof error === "string"
+            ? error
+            : error instanceof Error
+              ? error.message
+              : "İşlem tamamlanamadı. Yeniden dene.",
+        );
       }
     },
     [announce],
@@ -290,7 +296,7 @@ function App() {
   }, [dialog, confirmPort]);
   useEffect(() => {
     if (snapshot?.mode !== "compact") {
-      void bridge.hotspot(null);
+      void bridge.hotspot(null).catch(() => {});
       return;
     }
     setDialog(null);
@@ -299,7 +305,8 @@ function App() {
     if (!element) return;
     const report = () => {
       const { x, y, width, height } = element.getBoundingClientRect();
-      void bridge.hotspot({ x, y, width, height });
+      if (!element.isConnected || width <= 0 || height <= 0) return;
+      void bridge.hotspot({ x, y, width, height }).catch(() => {});
     };
     const observer = new ResizeObserver(report);
     observer.observe(element);
@@ -417,7 +424,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.5</span>
+              AgentHUD <span className="version">/ 0.7</span>
             </div>
             <div className="window-actions">
               <button
@@ -620,7 +627,7 @@ function App() {
                       <span className="live-dot" />
                       <strong>
                         {connected}
-                        <span> / 4</span>
+                        <span> / {s.providers.length}</span>
                       </strong>
                       <span>araç bağlı</span>
                     </div>
@@ -688,17 +695,10 @@ function App() {
                 </>
               ) : tab === "agents" ? (
                 <section className="list-surface">
-                  <SessionTracking
-                    provider="cursor"
+                  <CursorTracking
                     connection={s.cursorTracking}
                     disabled={!isDesktop}
                     onChange={(enabled) => bridge.tracking("cursor", enabled)}
-                  />
-                  <SessionTracking
-                    provider="claude"
-                    connection={s.claudeTracking}
-                    disabled={!isDesktop}
-                    onChange={(enabled) => bridge.tracking("claude", enabled)}
                   />
                   {s.sessions.length ? (
                     s.sessions.map((a) => (
@@ -748,7 +748,7 @@ function App() {
                     <Empty
                       icon="agents"
                       title="Henüz oturum görünmüyor"
-                      text="Cursor, Claude Code, Codex veya Antigravity açıldığında burada görünecek."
+                      text="Cursor, Codex veya Antigravity açıldığında burada görünecek."
                     />
                   )}
                   <p className="list-explanation">
@@ -1068,7 +1068,6 @@ function Connection({
   run: (fn: () => Promise<unknown>) => void;
   onClose: () => void;
 }) {
-  const local = p.id === "antigravity" || p.id === "codex";
   return (
     <div className="connection-dialog">
       <div className={`connection-brand brand-${p.id}`}>
@@ -1079,18 +1078,14 @@ function Connection({
           ? "Antigravity uygulamasını aç ve hesabına giriş yap. AgentHUD, uygulamanın yerel kullanım servisinden model gruplarını okur."
           : p.id === "codex"
             ? "Codex uygulamasında veya CLI’da ChatGPT hesabınla giriş yap. AgentHUD mevcut yerel oturumdan plan limitlerini okur."
-            : p.id === "cursor"
-              ? "Cursor’daki mevcut girişin otomatik algılanır. İstersen ayrı bir giriş penceresinde hesabını bağlayabilirsin."
-              : "Claude hesabınla giriş yap. Açılan pencerede girişini tamamladıktan sonra buraya dönebilirsin."}
+            : "Cursor uygulamasında hesabına giriş yap. AgentHUD mevcut yerel oturumdan Cursor Models ve Other Models limitlerini ayrı okur."}
       </p>
       <div className="source-detail">
         <Icon name="info" size={16} />
         <span>
           {p.source
             ? `Veri kaynağı: ${p.source}`
-            : local
-              ? "Kullanım için ilgili uygulamada açık bir oturum gerekli."
-              : "Giriş uygulamaya ait ayrı bir pencerede tamamlanır."}
+            : "Kullanım için ilgili uygulamada açık bir oturum gerekli."}
         </span>
       </div>
       {p.message && <p className="inline-warning">{p.message}</p>}
@@ -1098,15 +1093,13 @@ function Connection({
         className="primary-button"
         onClick={() =>
           run(async () => {
-            if (local) {
-              await bridge.refresh();
-              onClose();
-            } else await bridge.connect(p.id);
+            await bridge.refresh();
+            onClose();
           })
         }
       >
-        {local ? "Bağlantıyı yeniden kontrol et" : "Giriş penceresini aç"}
-        <Icon name={local ? "refresh" : "arrow"} size={16} />
+        Bağlantıyı yeniden kontrol et
+        <Icon name="refresh" size={16} />
       </button>
       <button
         className="text-button"

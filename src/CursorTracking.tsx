@@ -2,18 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { Brand, Icon } from "./icons";
 import type { TrackingConnection, Result } from "./types";
 
-export function SessionTracking({
-  provider,
+export function CursorTracking({
   connection,
   onChange,
   disabled = false,
 }: {
-  provider: "cursor" | "claude";
   connection: TrackingConnection;
   onChange: (enabled: boolean) => Promise<Result>;
   disabled?: boolean;
 }) {
-  const name = provider === "cursor" ? "Cursor" : "Claude Code";
   const [visible, setVisible] = useState(false);
   const [target, setTarget] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -36,8 +33,12 @@ export function SessionTracking({
       if (result.ok === false)
         setMessage(result.message || "Takip ayarı kaydedilemedi.");
       else setVisible(false);
-    } catch {
-      setMessage("Takip ayarı kaydedilemedi. Yeniden dene.");
+    } catch (error) {
+      setMessage(
+        typeof error === "string"
+          ? error
+          : "Takip ayarı kaydedilemedi. Yeniden dene.",
+      );
     } finally {
       setBusy(false);
     }
@@ -53,21 +54,18 @@ export function SessionTracking({
     <>
       <div
         className="tracking-connection"
-        data-tracking-provider={provider}
         data-tracking-status={connection.status}
       >
-        <span className={`brand brand-${provider}`}>
-          <Brand id={provider} />
+        <span className="brand brand-cursor">
+          <Brand id="cursor" />
         </span>
         <div className="tracking-description">
-          <strong>{name} durum takibi</strong>
+          <strong>Cursor durum takibi</strong>
           <p>
             {connection.message ||
               (connection.status === "waiting"
-                ? `${name} oturumunu yeniden açıp bir istek gönderdiğinde olaylar burada görünür.`
-                : provider === "claude"
-                  ? "Çalışma, yanıt bitişi ve onay bekleme durumunu gör."
-                  : "Çalışma ve bitiş olaylarını projeleriyle gör.")}
+                ? "Cursor’da bir ajan çalıştığında olaylar burada görünür."
+                : "Çalışma ve bitiş olaylarını projeleriyle gör.")}
           </p>
           <span className={`tracking-status ${connection.status}`}>
             {label}
@@ -78,8 +76,8 @@ export function SessionTracking({
           disabled={disabled || connection.status === "loading"}
           aria-label={
             connection.enabled
-              ? `${name} durum takibini kapat`
-              : `${name} durum takibini bağla`
+              ? "Cursor durum takibini kapat"
+              : "Cursor durum takibini bağla"
           }
           onClick={open}
         >
@@ -89,14 +87,14 @@ export function SessionTracking({
       </div>
       <dialog
         ref={modal}
-        aria-labelledby={`${provider}-tracking-title`}
+        aria-labelledby="cursor-tracking-title"
         onCancel={() => setVisible(false)}
         onClick={(event) => {
           if (event.target === event.currentTarget) setVisible(false);
         }}
       >
         <div className="dialog-header">
-          <h2 id={`${provider}-tracking-title`}>{name} durum takibi</h2>
+          <h2 id="cursor-tracking-title">Cursor durum takibi</h2>
           <button
             className="icon-button"
             aria-label="Takip penceresini kapat"
@@ -107,18 +105,11 @@ export function SessionTracking({
         </div>
         <p className="dialog-intro">
           {target
-            ? `Bu kullanıcı hesabındaki ${name} oturumlarını izle. Mevcut ${name} ayarların yedeklenir; diğer bağlantıların korunur.`
-            : `AgentHUD’un ${name} gözlemcisi kaldırılacak. Diğer ${name} ayarların korunur.`}
+            ? "Bu kullanıcı hesabındaki Cursor oturumlarını izle. Mevcut Cursor ayarların yedeklenir; diğer bağlantıların korunur."
+            : "AgentHUD’un Cursor gözlemcisi kaldırılacak. Diğer Cursor ayarların korunur."}
         </p>
         {target && (
           <div className="tracking-facts">
-            {provider === "claude" && (
-              <p>
-                Claude Code içindir. Kullanmak için çalışan bir Claude Code
-                oturumu gerekir; kota hesabını bağlamaz. Bağladıktan sonra
-                oturumu yeniden aç.
-              </p>
-            )}
             <p>
               Kaydedilenler: olay türü, proje klasörü, oturum kimliği ve zaman.
             </p>

@@ -143,14 +143,6 @@ export function Brand({ id }: { id: string }) {
         <path d="m4 24 8-1 1 5H2Z" fill="currentColor" />
       </svg>
     );
-  if (id === "claude")
-    return (
-      <svg viewBox="0 0 32 32" aria-hidden="true">
-        <g stroke="currentColor" strokeWidth="2.3" strokeLinecap="round">
-          <path d="m16 3 0 26M3 16h26M7 7l18 18M7 25 25 7M11 4l10 24M4 11l24 10M4 21 24 11M11 28 21 4" />
-        </g>
-      </svg>
-    );
   return (
     <svg viewBox="0 0 32 32" aria-hidden="true">
       <g stroke="currentColor" fill="none" strokeWidth="2">

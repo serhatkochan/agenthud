@@ -1,4 +1,4 @@
-export type ProviderId = "cursor" | "antigravity" | "claude" | "codex";
+export type ProviderId = "cursor" | "antigravity" | "codex";
 export interface Quota {
   id: string;
   label: string;
@@ -74,7 +74,6 @@ export interface Snapshot {
   ghostPeeking?: boolean;
   ghostError?: string;
   cursorTracking: TrackingConnection;
-  claudeTracking: TrackingConnection;
 }
 export interface Result {
   ok?: boolean;
@@ -98,7 +97,7 @@ export interface Bridge {
   window(action: string): Promise<Snapshot>;
   port(action: string, key: string): Promise<Result>;
   focus(sessionId: string, choiceId?: string): Promise<FocusResult>;
-  tracking(provider: "cursor" | "claude", enabled: boolean): Promise<Result>;
+  tracking(provider: "cursor", enabled: boolean): Promise<Result>;
   hotspot(
     rectangle: { x: number; y: number; width: number; height: number } | null,
   ): Promise<Result>;
