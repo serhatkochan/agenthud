@@ -24,6 +24,7 @@ import { windowLayout } from "./window-layout.mjs";
 import { GhostMode, registerRecoveryShortcut } from "./ghost.mjs";
 import { loadAltReader } from "./windows-input.mjs";
 import { CursorTracker } from "./cursor-tracking.mjs";
+import { ClaudeTracker } from "./claude-tracking.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 let win,
@@ -34,6 +35,7 @@ let win,
   ghost,
   ghostTimer,
   cursorTracker,
+  claudeTracker,
   refreshing,
   quitting = false;
 const loginWindows = new Map();
@@ -54,6 +56,7 @@ let state = {
   sessionsUpdatedAt: null,
   sessionsError: null,
   cursorTracking: { enabled: false, status: "loading", configPath: "" },
+  claudeTracking: { enabled: false, status: "loading", configPath: "" },
   settings,
   mode: "dashboard",
   refreshing: false,
@@ -88,13 +91,16 @@ const getProvider = (id) => {
 async function refreshSessions(system) {
   if (sessionRefresh) return sessionRefresh;
   sessionRefresh = (async () => {
-    const [current, cursor] = await Promise.all([
+    const [current, cursor, claude] = await Promise.all([
       system || inventory({ workingDirectories: false, agentsOnly: true }),
       cursorTracker.readSessions(),
+      claudeTracker.readSessions(),
     ]);
     state.cursorTracking = cursor.connection;
+    state.claudeTracking = claude.connection;
     state.sessions = await readSessions(current, {
       cursorSessions: cursor.sessions,
+      claudeSessions: claude.sessions,
     });
     state.sessionsUpdatedAt = Date.now();
     state.sessionsError = null;
@@ -318,6 +324,13 @@ async function createWindow() {
       join(app.getPath("home"), ".cursor"),
   });
   state.cursorTracking = await cursorTracker.status();
+  claudeTracker = new ClaudeTracker({
+    directory:
+      process.env.AGENTHUD_CLAUDE_DIRECTORY ||
+      process.env.CLAUDE_CONFIG_DIR ||
+      join(app.getPath("home"), ".claude"),
+  });
+  state.claudeTracking = await claudeTracker.status();
   win = new BrowserWindow({
     width: 1120,
     height: 940,
@@ -490,18 +503,19 @@ handle("hud:hotspot", (rectangle) => {
   return { ok: true };
 });
 handle("hud:tracking", async (provider, enabled) => {
-  if (provider !== "cursor" || typeof enabled !== "boolean")
+  if (!["cursor", "claude"].includes(provider) || typeof enabled !== "boolean")
     return { ok: false, message: "Geçersiz takip ayarı." };
+  const tracker = provider === "cursor" ? cursorTracker : claudeTracker;
   try {
-    await cursorTracker.setEnabled(enabled);
+    await tracker.setEnabled(enabled);
     await refreshSessions();
     return { ok: true };
   } catch (error) {
-    state.cursorTracking = await cursorTracker.status();
+    state[`${provider}Tracking`] = await tracker.status();
     notify();
     return {
       ok: false,
-      message: error.message?.startsWith("Cursor")
+      message: error.message?.startsWith(tracker.name)
         ? error.message
         : "Takip ayarı kaydedilemedi. Mevcut ayarlar korundu.",
     };

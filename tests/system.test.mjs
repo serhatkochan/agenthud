@@ -8,8 +8,91 @@ import {
 } from "../electron/system.mjs";
 import { projectHintDirectory, PortManager } from "../electron/ports.mjs";
 import { codexState, readSessions } from "../electron/sessions.mjs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, mkdtemp } from "node:fs/promises";
 import { join } from "node:path";
+
+test("Go module names and compiled Go/Cargo children remain visible after the launcher exits", async () => {
+  await mkdir(".cache", { recursive: true });
+  const cwd = await mkdtemp(join(process.cwd(), ".cache", "go-project-"));
+  await writeFile(
+    join(cwd, "go.mod"),
+    "module example.com/team/backend-api\n\ngo 1.24\n",
+  );
+  for (const launcher of ["go.exe", "cargo.exe"]) {
+    const manager = new PortManager();
+    const child = {
+      Name: "backend.exe",
+      ProcessId: 42,
+      ParentProcessId: 41,
+      CommandLine: '"C:\\build\\backend.exe"',
+      ExecutablePath: "C:\\build\\backend.exe",
+      WorkingDirectory: cwd,
+      CreationDate: "identity-a",
+    };
+    const listeners = [{ pid: 42, port: 8080 }];
+    const rows = await manager.scan({
+      listeners,
+      processes: [
+        child,
+        { Name: launcher, ProcessId: 41, ParentProcessId: 40 },
+        { Name: "Cursor.exe", ProcessId: 40 },
+      ],
+    });
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].project, "example.com/team/backend-api");
+    assert.equal(rows[0].agent, "cursor");
+    assert.equal(
+      (await manager.scan({ listeners, processes: [child] }))[0]?.orphan,
+      true,
+    );
+    assert.equal(
+      (
+        await manager.scan({
+          listeners: [...listeners, { pid: 42, port: 8081 }],
+          processes: [child],
+        })
+      ).filter((row) => row.status === "listening").length,
+      2,
+    );
+    assert.equal(
+      (
+        await manager.scan({
+          listeners,
+          processes: [{ ...child, CreationDate: "identity-b" }],
+        })
+      )[0]?.status,
+      "stopped",
+    );
+  }
+});
+
+test("a malformed package name cannot become a renderer object; unrelated executables stay out", async () => {
+  await mkdir(".cache", { recursive: true });
+  const cwd = await mkdtemp(join(process.cwd(), ".cache", "invalid-project-"));
+  await writeFile(join(cwd, "package.json"), '{"name":{"unexpected":true}}');
+  const child = {
+    Name: "node.exe",
+    ProcessId: 42,
+    ParentProcessId: 42,
+    WorkingDirectory: cwd,
+  };
+  const manager = new PortManager();
+  const rows = await manager.scan({
+    listeners: [{ pid: 42, port: 3000 }],
+    processes: [child],
+  });
+  assert.equal(typeof rows[0].project, "string");
+  const unknown = new PortManager();
+  assert.equal(
+    (
+      await unknown.scan({
+        listeners: [{ pid: 42, port: 8080 }],
+        processes: [{ ...child, Name: "unrelated.exe" }],
+      })
+    ).length,
+    0,
+  );
+});
 
 test("session discovery retains cwd when a large metadata header precedes events", async () => {
   const home = join(process.cwd(), ".cache", `test-sessions-${process.pid}`);

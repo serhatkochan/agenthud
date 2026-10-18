@@ -50,9 +50,12 @@ try {
   await page
     .getByRole("heading", { name: "Cursor durum takibi", exact: true })
     .waitFor();
-  await page.getByText("Değişecek ayar dosyası", { exact: true }).click();
+  await page
+    .getByRole("dialog")
+    .getByText("Değişecek ayar dosyası", { exact: true })
+    .click();
   assert.equal(
-    await page.locator(".tracking-file code").textContent(),
+    await page.getByRole("dialog").locator(".tracking-file code").textContent(),
     configPath,
   );
   await page.screenshot({ path: ".cache/cursor-tracking-connect.png" });
@@ -72,7 +75,9 @@ try {
     .getByRole("button", { name: "Takibi etkinleştir", exact: true })
     .click();
   await page
-    .locator('[data-tracking-status="waiting"]')
+    .locator(
+      '[data-tracking-provider="cursor"][data-tracking-status="waiting"]',
+    )
     .waitFor({ timeout: 16000 });
   await page.evaluate(() => window.agenthud.window("dashboard"));
   const installed = JSON.parse(await readFile(configPath, "utf8"));
@@ -122,7 +127,7 @@ try {
     .click();
   await page.getByRole("button", { name: "Takibi kapat", exact: true }).click();
   await page
-    .locator('[data-tracking-status="off"]')
+    .locator('[data-tracking-provider="cursor"][data-tracking-status="off"]')
     .waitFor({ timeout: 16000 });
   const final = JSON.parse(await readFile(configPath, "utf8"));
   assert.deepEqual(final.hooks.preToolUse, original.hooks.preToolUse);
@@ -135,7 +140,7 @@ try {
   );
   await writeFile(configPath, "invalid fixture config");
   await page
-    .locator('[data-tracking-status="error"]')
+    .locator('[data-tracking-provider="cursor"][data-tracking-status="error"]')
     .waitFor({ timeout: 16000 });
   await page
     .getByRole("button", { name: "Cursor durum takibini bağla", exact: true })

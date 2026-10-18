@@ -1,5 +1,13 @@
 # Değişiklikler
 
+## 0.6.0 · 18 Ekim 2026
+
+- Claude Code için isteğe bağlı durum bağlantısı eklendi. Çalışma, onay bildirimi, devam, yanıt bitişi ve hata durumları ayrı gösterilir; bekleyen onay kompakt maskota yansır.
+- Claude ayarları ve izin kuralları korunur, özgün dosya yedeklenir; kaldırma yalnızca AgentHUD komutlarını çıkarır. Claude kotası bağlantısından bağımsızdır.
+- Cursor ile ortak bağlantı diyaloğu ve dosya işlemleri paylaşılır; her sağlayıcının olay ve ayar biçimi ayrı kalır. Bozuk ayarlar değiştirilmez.
+- Claude hesabı ve canlı oturumuyla uçtan uca kabul yapılmadı. Windows gözlemcisi ve arayüz ayrı profilde örnek olaylarla test edildi.
+- Portlarda `go.mod` modül adı okunur; Go/Cargo araçlarının başlattığı derlenmiş sunucular tanınır. Başlatıcı kapandıktan sonra yalnızca aynı süreç kimliği korunur; yeniden başlatılan sunucu tekrar listelenir. Geçersiz proje adı nesneleri arayüze taşınmaz.
+
 ## 0.5.0 · 18 Ekim 2026
 
 - Odaklan düğmesi oturumun uygulama pencerelerini bulur. Benzersiz çalışma alanı başlığı eşleşmesinde pencereyi açar; belirsiz veya birden fazla eşleşmede seçim gösterir.

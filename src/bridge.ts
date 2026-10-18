@@ -22,6 +22,7 @@ const preview: Snapshot = {
   refreshing: false,
   shortcutAvailable: false,
   cursorTracking: { enabled: false, status: "off", configPath: "" },
+  claudeTracking: { enabled: false, status: "off", configPath: "" },
   settings: {
     alwaysOnTop: false,
     refreshSeconds: 60,

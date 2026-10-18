@@ -29,3 +29,7 @@ Resmi [Cursor hooks belgesinde](https://cursor.com/docs/hooks) `conversation_id`
 Yapılandırma değişimi özgün baytları yedekler; geçersiz UTF-8/JSON ve bilinmeyen sürüm değiştirilmez. Kaldırma yalnızca doğru veri klasörüne sahip AgentHUD v1 gözlemcilerini hedefler. Geç gelen bitiş ve yeni tur olayları ayrı değerlendirilir.
 
 Gerçek Windows gözlemcisi ve arayüz bağlantısı, resmî biçimdeki örnek olaylarla geçici Cursor profillerinde doğrulandı. Çalışma ve bitiş satırları 5 saniyelik taramayla göründü; kaldırma ve bozuk ayarı koruma sınandı. Kullanıcının asıl `.cursor/hooks.json` dosyası hâlâ yok; kullanıcı profilindeki hook yapılandırmaları değiştirilmedi. Gerçek IDE'den olay alma kabulü, kullanıcı bağlantıyı etkinleştirdikten sonra yapılmalı. Ayrıntı `CURSOR-TRACKING.md` içinde.
+
+## Claude Code
+
+0.6.0'da isteğe bağlı kullanıcı ayarı bağlantısı eklendi. UserPromptSubmit, PostToolUse/PostToolUseFailure, Notification, Stop/StopFailure ve SessionStart/SessionEnd olayları izlenir. İzin bildirimi bekleme kanıtıdır; izin kararını veren kancalar kullanılmaz. Yanıt bitişi bütün hedefin bittiği iddiasını taşımaz. Kullanıcının Claude hesabı olmadığı için canlı oturum test edilmedi. Ayrı profilde gerçek Windows gözlemcisi, bağlantı diyaloğu, çalışma/onay/devam/bitiş ve kompakt maskot kontrol edildi. Ayrıntı ve kaynak `CLAUDE-TRACKING.md` içinde.

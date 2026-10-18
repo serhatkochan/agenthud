@@ -60,12 +60,8 @@ export async function inventory({
   ]);
   const listeners = parseNetstat(netstat.stdout);
   if (!workingDirectories) return { processes, listeners };
-  const candidates = processes.filter(
-    (p) =>
-      listeners.some((l) => l.pid === p.ProcessId) &&
-      /^(node|bun|deno|go|python[\d.]*|uvicorn|cargo|rust|dotnet|docker-proxy|php|ruby|java)(\.exe)?$/i.test(
-        p.Name,
-      ),
+  const candidates = processes.filter((p) =>
+    listeners.some((l) => l.pid === p.ProcessId),
   );
   let directories = [];
   try {

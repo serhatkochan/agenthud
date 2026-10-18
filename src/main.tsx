@@ -12,7 +12,7 @@ import type {
   Result,
 } from "./types";
 import "./styles.css";
-import { CursorTracking } from "./CursorTracking";
+import { SessionTracking } from "./SessionTracking";
 import { FocusButton } from "./FocusButton";
 
 const pretty = (v: number) =>
@@ -688,10 +688,17 @@ function App() {
                 </>
               ) : tab === "agents" ? (
                 <section className="list-surface">
-                  <CursorTracking
+                  <SessionTracking
+                    provider="cursor"
                     connection={s.cursorTracking}
                     disabled={!isDesktop}
                     onChange={(enabled) => bridge.tracking("cursor", enabled)}
+                  />
+                  <SessionTracking
+                    provider="claude"
+                    connection={s.claudeTracking}
+                    disabled={!isDesktop}
+                    onChange={(enabled) => bridge.tracking("claude", enabled)}
                   />
                   {s.sessions.length ? (
                     s.sessions.map((a) => (

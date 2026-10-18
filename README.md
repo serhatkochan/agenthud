@@ -4,7 +4,7 @@ AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yere
 
 ## Çalıştırma
 
-`release/AgentHUD-0.5.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.6.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
 `Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Bu kısayol doluysa `Ctrl + Alt + H`, ardından `Ctrl + Shift + G` denenir. Etkin kısayol ayarlarda görünür. Hiçbiri kullanılamıyorsa hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır ve görünüm değişimlerinde korunur.
 
@@ -31,13 +31,17 @@ Kimlik bilgileri ana süreçte kalır. Yerel veritabanları ve mevcut kimlik dos
 
 Port yöneticisi geliştirme süreçlerinin TCP LISTEN portlarını, süreç kimliğini ve bulunabilirse IDE üst sürecini gösterir. Tarayıcıda açma ve süreç durdurma bağlıdır. Durdurmadan önce PID'nin aynı sürece ait olduğu yeniden kontrol edilir. Çalıştırma komutu ve proje klasörü çözülebildiğinde yeniden başlatma bilgisi 10 dakika tutulur.
 
-Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur olarak alınır ve süreç oluşturulma kimliğiyle eşleştirilir. Süreç durdurulmadan hemen önce tekrar okunur. Böylece ortak `node_modules` yolundan farklı bir alt klasörde çalışan sunucu aynı klasörde yeniden başlatılır. Windows bu bilgiye erişim vermezse veya yerleşim doğrulanamazsa yeniden başlatma kapalı kalır. Script yolu yalnızca proje adı için yardımcı ipucudur. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
+Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur olarak alınır ve süreç oluşturulma kimliğiyle eşleştirilir. Süreç durdurulmadan hemen önce tekrar okunur. Böylece ortak `node_modules` yolundan farklı bir alt klasörde çalışan sunucu aynı klasörde yeniden başlatılır. Proje adı `package.json` veya `go.mod` dosyasından okunur; Go/Cargo başlatıcılarının alt süreçleri de tanınır. Başlatıcı kapanınca daha önce görülen aynı süreç kimliği korunur. Windows bu bilgiye erişim vermezse veya yerleşim doğrulanamazsa yeniden başlatma kapalı kalır. Script yolu yalnızca proje adı için yardımcı ipucudur. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
 
 Antigravity'nin yerel servisinden gerçek proje klasörü ve oturum durumu okunur: Boşta, Çalışıyor, Meşgul veya Durduruluyor. Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Satırlarda veri kaynağı ve son etkinlik zamanı görünür. Ajanlar 5 saniyede bir kontrol edilir; uzak kota servisleri bu sıklıkta sorgulanmaz.
 
 Cursor için **Ajanlar > Cursor durum takibi > Bağla** seçeneğini kullanabilirsin. Değişecek dosya ve saklanacak bilgiler gösterilir; Takibi etkinleştir mevcut kullanıcı kancalarını koruyup özgün dosyayı yedekler. Düşünce/yanıt olayı Çalışıyor, bitiş olayı Tamamlandı olarak görünür. İlk olay gelene kadar bağlantı bekliyor durumundadır. Takibi kapat yalnızca AgentHUD gözlemcisini kaldırır. Bozuk veya bilinmeyen sürümlü ayarlar değiştirilmez. Sohbet içeriği ve komutlar kaydedilmez; izin kancalarına ekleme yapılmaz. Ayrıntı `docs/CURSOR-TRACKING.md` içinde.
 
-Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır. Claude yalnızca uygulama süreci bulunursa açık olarak gösterilir. CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Tüm araçlar için onay bekleme takibi açık iştir. Herdr entegrasyonu henüz yoktur.
+Cursor bağlantısının olay → Windows gözlemcisi → uygulama → arayüz akışı geçici profilde doğrulandı. Bu bilgisayarın asıl Cursor ayarları henüz değiştirilmedi; gerçek IDE olaylarının canlı kabulü bağlantı etkinleştirildiğinde yapılmalıdır.
+
+Claude Code için **Ajanlar > Claude Code durum takibi > Bağla** isteğe bağlı olay bağlantısını açar. Çalışma, onay bekleme, araçtan sonra devam ve yanıt bitişi gösterilir. Bu bağlantı kota hesabına giriş yapmaz. Mevcut ayarlar/izinler korunur; bağlantı kapatılınca yalnızca AgentHUD komutları kaldırılır. Gerçek Windows gözlemcisi ve arayüz akışı ayrı profilde örnek olaylarla doğrulandı; canlı Claude oturumu denenmedi. Hesap olmadığı için Claude kotası giriş gerekli durumundadır. Ayrıntı `docs/CLAUDE-TRACKING.md` içinde.
+
+CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Antigravity servisindeki enumlarda ayrı bir onay bekleme veya tamamlanma durumu yoktur; Boşta, Tamamlandı olarak sunulmaz. Cursor ve Antigravity için ayrı onay bekleme kaynağı hâlâ bulunmadı; bu durumlar uydurulmaz. Herdr entegrasyonu henüz yoktur.
 
 **Odaklan**, başlıktaki çalışma alanı adı tek bir pencereyle eşleşiyorsa onu açar. Birden fazla eşleşme veya belirsiz pencere varsa seçim listesi gösterir. Tek uygulama penceresi doğrudan açılır; genel bir ajan penceresinde sohbet sekmesinin de seçildiği iddia edilmez. Küçültülmüş pencere geri yüklenir, HUD küçük çubuğa döner. Kapanan veya değişen seçim reddedilir; liste yenilenebilir. Pencere başlığı tam proje yolu kanıtı değildir. Ayrıntı `docs/WINDOW-FOCUS.md` içinde.
 
@@ -53,6 +57,7 @@ pnpm test:ui
 pnpm test:ports
 pnpm test:ghost
 pnpm test:cursor
+pnpm test:claude
 pnpm test:focus
 pnpm live-check
 pnpm package
