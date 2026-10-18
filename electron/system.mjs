@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { readFile } from "node:fs/promises";
 const exec = promisify(execFile);
 
 export async function powershell(script, timeout = 18000) {
@@ -37,7 +38,7 @@ export async function inventory() {
   if (process.platform !== "win32") return { processes: [], listeners: [] };
   const [json, netstat] = await Promise.all([
     powershell(
-      '$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter "SessionId=$sid" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,CreationDate) | ConvertTo-Json -Compress -Depth 3',
+      '$sid=(Get-Process -Id $PID).SessionId; @(Get-CimInstance Win32_Process -Filter "SessionId=$sid" | Select-Object ProcessId,ParentProcessId,Name,CommandLine,ExecutablePath,CreationDate,@{Name="CreationId";Expression={$_.CreationDate.ToUniversalTime().ToFileTimeUtc().ToString([System.Globalization.CultureInfo]::InvariantCulture)}}) | ConvertTo-Json -Compress -Depth 3',
     ),
     exec("netstat.exe", ["-ano", "-p", "tcp"], {
       windowsHide: true,
@@ -45,10 +46,56 @@ export async function inventory() {
       maxBuffer: 4 * 1024 * 1024,
     }),
   ]);
+  const processes = JSON.parse(json || "[]");
+  const listeners = parseNetstat(netstat.stdout);
+  const candidates = processes.filter(
+    (p) =>
+      listeners.some((l) => l.pid === p.ProcessId) &&
+      /^(node|bun|deno|go|python[\d.]*|uvicorn|cargo|rust|dotnet|docker-proxy|php|ruby|java)(\.exe)?$/i.test(
+        p.Name,
+      ),
+  );
+  let directories = [];
+  try {
+    directories = await readWorkingDirectories(
+      candidates.map((p) => p.ProcessId),
+    );
+  } catch {}
   return {
-    processes: JSON.parse(json || "[]"),
-    listeners: parseNetstat(netstat.stdout),
+    processes: attachWorkingDirectories(processes, directories),
+    listeners,
   };
+}
+export function attachWorkingDirectories(processes, directories) {
+  // WMI truncates creation times to microseconds; GetProcessTimes retains 100 ns ticks.
+  const micros = (id) =>
+    typeof id === "string" && /^\d{1,20}$/.test(id) ? BigInt(id) / 10n : null;
+  return processes.map((p) => {
+    const created = micros(p.CreationId);
+    const match =
+      created === null
+        ? null
+        : directories.find(
+            (d) =>
+              d.ProcessId === p.ProcessId && micros(d.CreationId) === created,
+          );
+    return { ...p, WorkingDirectory: match?.WorkingDirectory ?? null };
+  });
+}
+export async function readWorkingDirectories(pids) {
+  const ids = [...new Set(pids)]
+    .filter((id) => Number.isSafeInteger(id) && id > 0)
+    .slice(0, 128);
+  if (process.platform !== "win32" || !ids.length) return [];
+  const source = await readFile(
+    new URL("./native/ProcessDirectory.cs", import.meta.url),
+    "utf8",
+  );
+  const result = await powershell(
+    `Add-Type -TypeDefinition @'\n${source}\n'@; $processIds=@(${ids.join(",")}); @($processIds | ForEach-Object { [HudProcessDirectory]::ReadDirectory([int]$_) } | Where-Object { $null -ne $_ }) | ConvertTo-Json -Compress -Depth 3`,
+  );
+  const decoded = JSON.parse(result || "[]");
+  return Array.isArray(decoded) ? decoded : decoded ? [decoded] : [];
 }
 export function flag(command, name) {
   const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

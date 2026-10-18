@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { parseNetstat, agentFor, flag } from "../electron/system.mjs";
-import { projectDirectory, PortManager } from "../electron/ports.mjs";
+import {
+  parseNetstat,
+  agentFor,
+  flag,
+  attachWorkingDirectories,
+} from "../electron/system.mjs";
+import { projectHintDirectory, PortManager } from "../electron/ports.mjs";
 import { codexState, readSessions } from "../electron/sessions.mjs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -70,14 +75,14 @@ test("PID ancestor traversal finds an IDE and terminates on a cycle", () => {
   const p = { Name: "node.exe", ProcessId: 7, ParentProcessId: 7 };
   assert.equal(agentFor(p, [p]), null);
 });
-test("quoted Windows module paths resolve the actual project directory", () => {
+test("quoted Windows module paths provide only a project display hint", () => {
   assert.equal(
-    projectDirectory(
+    projectHintDirectory(
       '"C:\\Program Files\\nodejs\\node.exe" "C:\\ex\\My project\\node_modules\\vite\\bin\\vite.js"',
     ),
     "C:\\ex\\My project",
   );
-  assert.equal(projectDirectory("node server.js"), null);
+  assert.equal(projectHintDirectory("node server.js"), null);
   assert.equal(
     flag(
       '--csrf_token "secret value" --extension_server_port=1234',
@@ -89,6 +94,66 @@ test("quoted Windows module paths resolve the actual project directory", () => {
     flag("--extension_server_port=1234", "extension_server_port"),
     "1234",
   );
+});
+test("script directory is only a display hint and cannot authorize restart", async () => {
+  const manager = new PortManager();
+  const entries = await manager.scan({
+    listeners: [{ port: 3000, pid: 42 }],
+    processes: [
+      {
+        Name: "node.exe",
+        ProcessId: 42,
+        ParentProcessId: 1,
+        CommandLine: 'node "C:\\shared\\node_modules\\vite\\bin\\vite.js"',
+        CreationDate: "a",
+      },
+    ],
+  });
+  assert.equal(entries[0].canRestart, false);
+  assert.equal(manager.entries.get(entries[0].key).cwd, null);
+});
+test("native cwd is bound to PID and microsecond-precision CIM process creation time", () => {
+  const processes = [
+    { ProcessId: 42, CreationId: "134368017789901740" },
+    { ProcessId: 43, CreationId: "134368017789901750" },
+    { ProcessId: 44, CreationId: "134368017789901740" },
+  ];
+  const directories = [
+    {
+      ProcessId: 42,
+      CreationId: "134368017789901749",
+      WorkingDirectory: "C:\\actual",
+    },
+    {
+      ProcessId: 43,
+      CreationId: "134368017789901749",
+      WorkingDirectory: "C:\\wrong-process",
+    },
+  ];
+  assert.deepEqual(
+    attachWorkingDirectories(processes, directories).map(
+      (p) => p.WorkingDirectory,
+    ),
+    ["C:\\actual", null, null],
+  );
+});
+test("authoritative working directory overrides a shared node_modules path", async () => {
+  const manager = new PortManager();
+  const entries = await manager.scan({
+    listeners: [{ port: 3000, pid: 42 }],
+    processes: [
+      {
+        Name: "node.exe",
+        ProcessId: 42,
+        ParentProcessId: 1,
+        CommandLine: 'node "C:\\shared\\node_modules\\vite\\bin\\vite.js"',
+        CreationDate: "a",
+        WorkingDirectory: "C:\\apps\\actual",
+      },
+    ],
+  });
+  assert.equal(entries[0].canRestart, true);
+  assert.equal(manager.entries.get(entries[0].key).cwd, "C:\\apps\\actual");
 });
 test("a vanished server remains restartable only while its command is retained", async () => {
   const manager = new PortManager();

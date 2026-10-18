@@ -1,11 +1,11 @@
-import { dirname, join, basename } from "node:path";
+import { dirname, join, basename, win32 } from "node:path";
 import { readFile } from "node:fs/promises";
 import { agentFor, inventory } from "./system.mjs";
 import { spawn } from "node:child_process";
 
 const developer =
   /^(node|bun|deno|go|python[\d.]*|uvicorn|cargo|rust|dotnet|docker-proxy|php|ruby|java)(\.exe)?$/i;
-export function projectDirectory(command = "") {
+export function projectHintDirectory(command = "") {
   const module = command.match(
     /([A-Za-z]:[\\/][^"\r\n]*?)[\\/]node_modules[\\/]/,
   );
@@ -23,16 +23,23 @@ export class PortManager {
       const p = system.processes.find((x) => x.ProcessId === listener.pid);
       if (!p || !developer.test(p.Name) || p.ProcessId === process.pid)
         continue;
-      const cwd = projectDirectory(p.CommandLine);
+      const cwd =
+        p.WorkingDirectory && win32.isAbsolute(p.WorkingDirectory)
+          ? win32.resolve(p.WorkingDirectory)
+          : null;
       if (cwd?.toLowerCase() === process.cwd().toLowerCase()) continue;
       const key = `${listener.port}:${p.ProcessId}`;
       live.add(key);
-      let project = cwd ? basename(cwd) : p.Name.replace(/\.exe$/i, "");
-      if (cwd)
+      const displayDirectory = cwd ?? projectHintDirectory(p.CommandLine);
+      let project = displayDirectory
+        ? basename(displayDirectory)
+        : p.Name.replace(/\.exe$/i, "");
+      if (displayDirectory)
         try {
           project =
-            JSON.parse(await readFile(join(cwd, "package.json"), "utf8"))
-              .name || project;
+            JSON.parse(
+              await readFile(join(displayDirectory, "package.json"), "utf8"),
+            ).name || project;
         } catch {}
       this.entries.set(key, {
         key,
@@ -104,6 +111,10 @@ export class PortManager {
       throw new Error("Süreç değişmiş. Listeyi yenile ve yeniden dene.");
     if (e.pid === process.pid)
       throw new Error("Uygulamanın kendi süreci durdurulamaz.");
+    e.cwd =
+      current.WorkingDirectory && win32.isAbsolute(current.WorkingDirectory)
+        ? win32.resolve(current.WorkingDirectory)
+        : null;
     process.kill(e.pid);
     e.status = "stopped";
     e.stoppedAt = Date.now();
