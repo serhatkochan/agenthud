@@ -55,6 +55,7 @@ export interface Snapshot {
   refreshing: boolean;
   systemError?: string;
   refreshedAt?: number;
+  shortcutAvailable: boolean;
 }
 export interface Result {
   ok?: boolean;

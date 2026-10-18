@@ -4,9 +4,9 @@ AI geliştirme araçlarının kalan kullanım haklarını bir araya getiren yere
 
 ## Çalıştırma
 
-`release/AgentHUD-0.1.0-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
+`release/AgentHUD-0.1.1-Windows.exe` dosyasını aç. Portable sürüm kurulum istemez. Önceki sürüm açıksa tepsi menüsünden Çıkış'ı seçip yeni dosyayı aç. Başlıktaki küçük çubuk düğmesi kompakt görünüme geçirir; maskot yüzen paneli açar. X düğmesi uygulamayı tepsiye gizler. Tamamen kapatmak için Ayarlar > Uygulamadan çık veya tepsi menüsünü kullan.
 
-`Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir.
+`Ctrl + Shift + H` uygulamayı geri çağırır ve hayalet modunu kapatır. Kısayol başka bir uygulamada kullanılıyorsa bu açıklanır ve hayalet modu açılmaz. Küçük panel ve normal görünümde başlıktaki sabitleme düğmesi her zaman üstte kalmayı değiştirir; kaydedilen tercih açılışta uygulanır.
 
 Bu geliştirme paketi bir kod imzalama sertifikasıyla imzalanmamıştır. Windows ilk çalıştırmada yayıncı uyarısı gösterebilir. SHA256 doğrulaması `release/SHA256SUMS.txt` dosyasındadır.
 
@@ -29,7 +29,7 @@ Kimlik bilgileri ana süreçte kalır. Yerel veritabanları ve mevcut kimlik dos
 
 Port yöneticisi geliştirme süreçlerinin TCP LISTEN portlarını, süreç kimliğini ve bulunabilirse IDE üst sürecini gösterir. Tarayıcıda açma ve süreç durdurma bağlıdır. Durdurmadan önce PID'nin aynı sürece ait olduğu yeniden kontrol edilir. Çalıştırma komutu ve proje klasörü çözülebildiğinde yeniden başlatma bilgisi 10 dakika tutulur.
 
-Windows'ta proje klasörü şu anda komuttaki mutlak script veya `node_modules` yolundan çıkarılır; karmaşık monorepo komutlarında gerçek çalışma klasörüyle aynı olmayabilir. Bu, yeniden başlatmanın mevcut sınırıdır. Klasör bulunamadığında başlatma düğmesi kapalıdır. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
+Windows'ta gerçek çalışma klasörü sürecin dizin bilgisinden salt okunur olarak alınır ve süreç oluşturulma kimliğiyle eşleştirilir. Süreç durdurulmadan hemen önce tekrar okunur. Böylece ortak `node_modules` yolundan farklı bir alt klasörde çalışan sunucu aynı klasörde yeniden başlatılır. Windows bu bilgiye erişim vermezse veya yerleşim doğrulanamazsa yeniden başlatma kapalı kalır. Script yolu yalnızca proje adı için yardımcı ipucudur. Üst sürecin bulunamaması kesin zombi süreç kanıtı olarak sunulmaz.
 
 Codex'in yakın tarihli yerel oturumlarından doğrulanabilen task olayları okunur. Diğer uygulamalar açıkken gösterilir; CPU etkinliği üzerinden onay veya çalışma durumu uydurulmaz. Tüm araçlar için güvenilir Working / Blocked / Done / Idle takibi ve oturumun tam penceresine odaklanma sonraki geliştirme işidir. Herdr entegrasyonu henüz yoktur.
 

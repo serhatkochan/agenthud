@@ -44,6 +44,7 @@ let state = {
   mode: "dashboard",
   refreshing: false,
   systemError: null,
+  shortcutAvailable: false,
 };
 const notify = () => {
   state.settings = settings;
@@ -172,7 +173,7 @@ function applyMode(mode) {
     const work = screen.getDisplayNearestPoint(win.getBounds()).workArea;
     win.setPosition(work.x + work.width - size[0] - 24, work.y + 24, true);
   }
-  win.setAlwaysOnTop(settings.alwaysOnTop, "floating");
+  win.setAlwaysOnTop(settings.alwaysOnTop);
   notify();
 }
 function setupTimer() {
@@ -249,6 +250,7 @@ async function createWindow() {
     minWidth: 760,
     minHeight: 540,
     frame: false,
+    alwaysOnTop: settings.alwaysOnTop,
     transparent: true,
     backgroundColor: "#00000000",
     show: false,
@@ -312,13 +314,16 @@ async function createWindow() {
     win.focus();
     notify();
   });
-  globalShortcut.register("CommandOrControl+Shift+H", () => {
-    win.setIgnoreMouseEvents(false);
-    settings.clickThrough = false;
-    win.show();
-    win.focus();
-    notify();
-  });
+  state.shortcutAvailable = globalShortcut.register(
+    "CommandOrControl+Shift+H",
+    () => {
+      win.setIgnoreMouseEvents(false);
+      settings.clickThrough = false;
+      win.show();
+      win.focus();
+      notify();
+    },
+  );
   setupTimer();
   void refresh();
 }
@@ -347,10 +352,17 @@ handle("hud:settings", async (patch) => {
   if (typeof patch.clickThrough === "boolean") {
     if (patch.clickThrough && state.mode === "dashboard")
       throw new Error("Hayalet modu için küçük görünüme geç.");
+    if (patch.clickThrough && !state.shortcutAvailable)
+      return {
+        ...state,
+        ok: false,
+        message:
+          "Geri çağırma kısayolu başka bir uygulamada kullanılıyor. Hayalet modu açılamadı.",
+      };
     settings.clickThrough = patch.clickThrough;
     win.setIgnoreMouseEvents(settings.clickThrough, { forward: true });
   }
-  win.setAlwaysOnTop(settings.alwaysOnTop, "floating");
+  win.setAlwaysOnTop(settings.alwaysOnTop);
   setupTimer();
   await writeFile(
     join(app.getPath("userData"), "settings.json"),

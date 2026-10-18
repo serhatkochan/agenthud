@@ -883,6 +883,12 @@ function App() {
               {s.mode !== "dashboard" && (
                 <button
                   className="subtle-button"
+                  disabled={!s.shortcutAvailable}
+                  title={
+                    s.shortcutAvailable
+                      ? ""
+                      : "Geri çağırma kısayolu başka bir uygulamada kullanılıyor."
+                  }
                   onClick={() => {
                     updateSettings({ clickThrough: true });
                     closeDialog();
@@ -893,8 +899,14 @@ function App() {
               )}
             </div>
             <p className="shortcut-note">
-              <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> ile her zaman
-              geri çağırabilirsin.
+              {s.shortcutAvailable ? (
+                <>
+                  <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> ile geri
+                  çağırabilirsin.
+                </>
+              ) : (
+                "Geri çağırma kısayolu kullanımda. Uygulamayı tepsi simgesinden açabilirsin."
+              )}
             </p>
             <button
               className="quit-button"

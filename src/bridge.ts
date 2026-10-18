@@ -20,6 +20,7 @@ const preview: Snapshot = {
   sessions: [],
   mode: "dashboard",
   refreshing: false,
+  shortcutAvailable: false,
   settings: {
     alwaysOnTop: false,
     refreshSeconds: 60,

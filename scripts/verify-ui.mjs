@@ -4,10 +4,23 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 await mkdir(".cache", { recursive: true });
+await mkdir(".cache/ui-profile", { recursive: true });
+await writeFile(
+  ".cache/ui-profile/settings.json",
+  JSON.stringify({
+    alwaysOnTop: true,
+    refreshSeconds: 60,
+    notifications: false,
+    launchCompact: false,
+  }),
+);
 const env = { ...process.env };
 delete env.ELECTRON_RUN_AS_NODE;
 const application = await electron.launch({
-  args: process.argv[2] ? [] : ["."],
+  args: [
+    ...(process.argv[2] ? [] : ["."]),
+    `--user-data-dir=${join(process.cwd(), ".cache", "ui-profile")}`,
+  ],
   cwd: process.cwd(),
   env,
   executablePath:
@@ -17,6 +30,7 @@ const application = await electron.launch({
 });
 const page = await application.firstWindow();
 const errors = [];
+let initialSettings;
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("console", (message) => {
   if (message.type() === "error") errors.push(message.text());
@@ -39,7 +53,7 @@ try {
       providers: snapshot.providers.map((p) => ({
         id: p.id,
         status: p.status,
-        quotas: p.quotas,
+        quotaCount: p.quotas.length,
       })),
       ports: snapshot.ports.length,
       sessions: snapshot.sessions.length,
@@ -55,16 +69,43 @@ try {
   await page.locator(".settings-nav").click();
   await page.getByRole("dialog").waitFor();
   const initial = snapshot.settings;
+  initialSettings = initial;
+  assert.equal(
+    await application.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()[0].isAlwaysOnTop(),
+    ),
+    true,
+  );
   await page
     .getByRole("switch", { name: "Her zaman üstte", exact: true })
     .click();
   const toggled = await page.evaluate(() => window.agenthud.snapshot());
   assert.equal(toggled.settings.alwaysOnTop, !initial.alwaysOnTop);
+  for (let i = 0; i < 20; i++) {
+    const pinned = await application.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()
+        .find((w) => w.getTitle().includes("AgentHUD"))
+        .isAlwaysOnTop(),
+    );
+    if (pinned === !initial.alwaysOnTop) break;
+    await page.waitForTimeout(100);
+  }
+  assert.equal(
+    await application.evaluate(({ BrowserWindow }) =>
+      BrowserWindow.getAllWindows()
+        .find((w) => w.getTitle().includes("AgentHUD"))
+        .isAlwaysOnTop(),
+    ),
+    !initial.alwaysOnTop,
+  );
+  await page
+    .getByRole("switch", { name: "Her zaman üstte", exact: true })
+    .click();
   assert.equal(
     await application.evaluate(({ BrowserWindow }) =>
       BrowserWindow.getAllWindows()[0].isAlwaysOnTop(),
     ),
-    !initial.alwaysOnTop,
+    true,
   );
   for (const label of ["Kota bildirimleri", "Kompakt başlat"])
     await page.getByRole("switch", { name: label, exact: true }).click();
@@ -114,20 +155,39 @@ try {
     false,
   );
   await page.getByRole("button", { name: "Ayarları aç", exact: true }).click();
-  await page
-    .getByRole("button", { name: "Hayalet modunu aç", exact: true })
-    .click();
-  assert.equal(
-    (await page.evaluate(() => window.agenthud.snapshot())).settings
-      .clickThrough,
-    true,
-  );
-  assert.equal(
-    await application.evaluate(({ globalShortcut }) =>
-      globalShortcut.isRegistered("CommandOrControl+Shift+H"),
-    ),
-    true,
-  );
+  if (snapshot.shortcutAvailable) {
+    await page
+      .getByRole("button", { name: "Hayalet modunu aç", exact: true })
+      .click();
+    assert.equal(
+      (await page.evaluate(() => window.agenthud.snapshot())).settings
+        .clickThrough,
+      true,
+    );
+    assert.equal(
+      await application.evaluate(({ globalShortcut }) =>
+        globalShortcut.isRegistered("CommandOrControl+Shift+H"),
+      ),
+      true,
+    );
+  } else {
+    const denied = await page.evaluate(() =>
+      window.agenthud.setSettings({ clickThrough: true }),
+    );
+    assert.equal(denied.ok, false);
+    assert.equal(
+      (await page.evaluate(() => window.agenthud.snapshot())).settings
+        .clickThrough,
+      false,
+    );
+    assert.equal(
+      await page
+        .getByRole("button", { name: "Hayalet modunu aç", exact: true })
+        .isDisabled(),
+      true,
+    );
+    await page.keyboard.press("Escape");
+  }
   await page.evaluate(() =>
     window.agenthud.setSettings({ clickThrough: false }),
   );
@@ -222,5 +282,9 @@ try {
   );
   console.log("UI checks passed.");
 } finally {
+  if (initialSettings)
+    await page
+      .evaluate((value) => window.agenthud.setSettings(value), initialSettings)
+      .catch(() => {});
   await application.close();
 }
