@@ -1,23 +1,24 @@
-# AgentHUD 0.2.0 kontrol kaydı
+# AgentHUD 0.3.0 kontrol kaydı
 
 18 Ekim 2026. Bu kayıt, ilk çalışan masaüstü sürümünün kanıtlarını ve devam eden işleri ayırır. Bütün PRD'nin tamamlandığı iddiası değildir.
 
 ## Doğrulananlar
 
 - TypeScript ve Vite üretim derlemesi geçti.
-- `pnpm test`: 31 test, 31 başarılı. Kota ve port kontrollerine ek olarak Antigravity durum eşleştirmeleri, proje URI'leri, geçersiz yanıtlar, yönlendirme, yarıda kesilme, toplam süre aşımı, yanıt boyutu sınırı ve gerçek oturum izleyicisine veri akışı kapsanıyor.
+- `pnpm test`: 41 test, 41 başarılı. Kota, port ve Antigravity kapsamına ek olarak hayalet modu, maskot hit alanı, geçici panel, eski konuma dönüş, hata çıkışı ve kısayol seçimi sınanır.
 - Gerçek hesap kontrolü: Cursor, Antigravity ve Codex bağlı. Cursor Models ile Other Models ayrı. Antigravity üç model grubunu ve beş ölçümü döndürüyor. Claude, kullanıcının hesabı olmadığı için doğru biçimde giriş gerekli durumunda.
 - Antigravity'nin iki gerçek Idle oturumu proje klasörleri ve yerel servis kaynağıyla arayüzde doğrulandı. Ajan kontrol zamanı 5 saniyelik döngüde ilerlerken kota ölçüm tarihlerinin değişmediği test edildi. Çalışan/onay bekleyen bir kullanıcı oturumu test amacıyla başlatılmadı. Busy/Running/Canceling adları kurulu uygulama ikilisinde doğrulandı ve karşılıkları yanıt örnekleriyle sınandı; bilinmeyen değerler çalışma veya onay durumu sayılmıyor.
-- Gerçek Electron kontrolü hem geliştirme sürümünde hem 0.2.0 `release/win-unpacked/AgentHUD.exe` içinde geçti. Ana ekran, bütün sağlayıcı bağlantı diyalogları, ayarlar, Escape, üç gezinme sekmesi, 48 px kompakt görünüm, yüzen panel ve 380 px dar görünüm tıklandı. Yeni ajan satırlarının dar panelde yatay taşmadığı ayrıca doğrulandı.
-- Sabitleme ayarı açılışta, kapatılırken ve yeniden açılırken `BrowserWindow.isAlwaysOnTop()` ile doğrulandı. Önceki yalnızca tersine çevirme testi eksikti: başlangıçta aktif tercihi pencereye uygulanmıyor ve Windows'ta açıkça verilen `floating` seviyesi üstte kalma durumunu bozabiliyordu. Sadece bool alanı kullanan çağrı ve açılış tercihi düzeltildi. Simge durumuna küçültme `isMinimized()` ile ve tepsiye gizleme `isVisible()` ile doğrulandı. Kısayol başka uygulamada kayıtlıyken hayalet modunun hem arayüzden hem ana süreçten engellendiği test edildi. Gerçek işletim sistemi kısayoluna basarak geri çağırma ayrıca test edilmedi.
+- Gerçek Electron kontrolü hem geliştirme sürümünde hem 0.3.0 `release/win-unpacked/AgentHUD.exe` içinde geçti. Ana ekran, bütün sağlayıcı bağlantı diyalogları, ayarlar, Escape, üç gezinme sekmesi, 48 px kompakt görünüm, yüzen panel ve 380 px dar görünüm tıklandı. Yeni ajan satırlarının dar panelde yatay taşmadığı ayrıca doğrulandı. `test:ghost` paketlenmiş uygulamada da geçti; Windows N-API bileşeni başarıyla yüklendi.
+- Sabitleme ayarı açılışta, kapatılırken ve yeniden açılırken `BrowserWindow.isAlwaysOnTop()` ile doğrulandı. 0.3.0 kontrolünde görünüm değişimi sonrasında sabitlemenin düştüğü ayrıca bulundu. Bool çağrısı da Electron'da varsayılan `floating` seviyesini seçiyormuş; önceki 0.1.1 düzeltmesi eksik kaldı. Windows için `pop-up-menu` seviyesi seçildi; panel/çubuk değişimi sonrası sabitleme yeniden doğrulandı. Ayrıntı ve kaynaklar `GHOST-MODE.md` içinde. Simge durumuna küçültme `isMinimized()` ile ve tepsiye gizleme `isVisible()` ile doğrulandı.
+- Hayalet modunda gerçek Windows tıklama geçişi bayrağı kota alanında aktif, maskot bölgesinde pasif bulundu. Panel açma, küçültme, kapatma ve normal görünüme dönme etkileşimi sınandı. Fiziksel fareyle hayalet modundaki maskota tıklandı ve panel açıldı. Ana kısayol doluyken seçilen Ctrl + Alt + H gerçek klavye girdisiyle hayalet modunu kapattı. Alt basılı tutma geçişi mantık testinde ve native okuyucu yükleme testinde var; fiziksel kısa Alt denemesi basılı tutmayı kanıtlamadı.
 - Klavye odağı görünür; normal/dar panelde ana içeriğin yatay taşmadığı doğrulandı. Renderer'da sıfır konsol hatası / sayfa hatası kaydedildi.
 - Port kabul testi yalnızca kendi geçici HTTP sunucusunda geçti: ortak `node_modules` içindeki script, `apps/Gerçek çalışma alanı` klasöründe çalıştırıldı. Gerçek klasör PID ve oluşturulma zamanıyla doğrulandı; yeniden başlatılan HTTP sunucusu `process.cwd()` değerini aynı klasör olarak döndürdü. Windows program yolunda boşluk olmasına ilişkin önceki düzeltme de bu akışta kapsanıyor.
 - Canlı mevcut portlar listelendi; kullanıcının çalışan sunucuları durdurulmadı.
 - Muted metin `#A4AFA6 / #1C231E`: 7.08:1. Küçük soluk metin `#7B8A7E / #111612`: 5.04:1. İkisi de normal metinde AA eşiğini geçiyor.
-- 0.2.0 Portable EXE üretildi; içindeki paketlenmiş uygulamanın Electron ekran/tıklama kontrolleri geçti. Önceki 0.1.1 Portable EXE ayrıca doğrudan başlatılıp Windows pencere envanterinde bulundu. O sırada ek Windows ekran yakalama kontrolünde araç onayı zaman aşımına uğramıştı; bu ek kontrol tamamlanmadı. 0.2.0 için bağımsız Windows ekran yakalama testi iddia edilmiyor.
+- 0.3.0 Portable EXE üretildi; içindeki paketlenmiş uygulamanın Electron ekran/tıklama ve Windows hayalet modu kontrolleri geçti. Fiziksel fare ve kısayol testleri geliştirme sürümünde yapıldı. Portable dış sarmalayıcı için ayrıca fiziksel giriş testi yapılmadı.
 - İmza durumu `NotSigned`. SHA256 kaydı `release/SHA256SUMS.txt` içinde.
 
-Yerel kanıtlar: `.cache/ui-result.json`, `.cache/dashboard.png`, `.cache/compact.png`, `.cache/panel.png`, `.cache/panel-settings-380.png`, `.cache/agents-panel-380.png`, `.cache/agents.png`, `.cache/ports.png`. Bunlar gerçek kullanım bilgisi içerebildiğinden Git dışında tutulur.
+Yerel kanıtlar: `.cache/ui-result.json`, `.cache/ghost-result.json`, `.cache/physical-ghost-result.json`, `.cache/ghost-compact.png`, `.cache/ghost-panel.png`, `.cache/dashboard.png`, `.cache/compact.png`, `.cache/panel.png`, `.cache/panel-settings-380.png`, `.cache/agents-panel-380.png`, `.cache/agents.png`, `.cache/ports.png`. Bunlar gerçek kullanım bilgisi içerebildiğinden Git dışında tutulur.
 
 ## Tasarım teslim kontrolü
 
@@ -31,7 +32,7 @@ Yerel kanıtlar: `.cache/ui-result.json`, `.cache/dashboard.png`, `.cache/compac
 1. Cursor ve Claude için kanıtlı Working / Blocked / Done / Idle olayları. Antigravity'nin yerel durumları bağlı; ayrı onay ve tamamlanma olayı kaynakta bulunmadığı için gösterilmiyor. Codex task olayları okunabiliyor.
 2. Çok pencereli IDE'lerde belirli proje/oturum penceresine tam odaklanma. Şimdiki odaklanma uygulama düzeyinde.
 3. Claude hesabı edinildiğinde gerçek giriş ve kullanım yanıtının uçtan uca testi.
-4. Hayalet modunda maskot üzerinden etkileşim ve Alt ile geçici erişim. Şimdiki sürümde geri çağırma kısayolu ve tepsi kullanılıyor.
+4. Alt basılı tutma davranışının fiziksel kabulü. Maskot etkileşimi, tıklama geçişi ve geri çağırma kısayolu tamamlandı; geçici panel mantık testinde doğrulandı.
 
 Windows gerçek cwd okuması tamamlandı ve gerçek alt klasör testiyle doğrulandı. Erişilemeyen süreçlerde yeniden başlatma kapalı tutulur. PEB yerleşimi işletim sisteminin iç yapısı olduğundan gelecekteki Windows sürümlerinde tekrar doğrulanmalıdır. İlgili API sınırı [Microsoft'un NtQueryInformationProcess belgesinde](https://learn.microsoft.com/en-us/windows/win32/api/winternl/nf-winternl-ntqueryinformationprocess) açıklanır. Sabitleme düzeltmesi [kullanılan Electron sürümünün pencere uygulaması](https://github.com/electron/electron/blob/v44.9.0/shell/browser/native_window_views.cc) ve gerçek pencere testiyle karşılaştırıldı.
 

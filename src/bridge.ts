@@ -46,5 +46,6 @@ export const bridge: Bridge = window.agenthud ?? {
   window: async (mode) => ({ ...preview, mode: mode as Snapshot["mode"] }),
   port: unavailable,
   focus: unavailable,
+  hotspot: unavailable,
   onUpdate: () => () => {},
 };

@@ -882,11 +882,50 @@ h1 {
   color: #a7d8bb;
 }
 .mascot-button {
+  position: relative;
+  width: 48px;
+  height: 44px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   padding: 3px 5px;
+}
+.compact-bar.is-ghost {
+  border-style: dashed;
+  border-color: #81b89a;
+}
+.ghost-light {
+  position: absolute;
+  top: 4px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--mint);
+}
+.ghost-note {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0;
+  padding: 10px 12px;
+  border: 1px solid #475b4b;
+  border-radius: 7px;
+  font-size: 10px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.ghost-note svg {
+  flex-shrink: 0;
+}
+.ghost-note button {
+  margin-left: auto;
+  padding: 4px 6px;
+  color: var(--mint);
+  background: transparent;
+  font-size: 10px;
 }
 .compact-divider {
   width: 1px;

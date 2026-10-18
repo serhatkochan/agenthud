@@ -62,6 +62,10 @@ export interface Snapshot {
   shortcutAvailable: boolean;
   sessionsUpdatedAt?: number;
   sessionsError?: string;
+  recoveryShortcut?: string | null;
+  ghostAvailable?: boolean;
+  ghostPeeking?: boolean;
+  ghostError?: string;
 }
 export interface Result {
   ok?: boolean;
@@ -76,6 +80,9 @@ export interface Bridge {
   window(action: string): Promise<Snapshot>;
   port(action: string, key: string): Promise<Result>;
   focus(id: ProviderId): Promise<Result>;
+  hotspot(
+    rectangle: { x: number; y: number; width: number; height: number } | null,
+  ): Promise<Result>;
   onUpdate(fn: (s: Snapshot) => void): () => void;
 }
 declare global {

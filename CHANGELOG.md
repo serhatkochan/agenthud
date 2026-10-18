@@ -1,5 +1,12 @@
 # Değişiklikler
 
+## 0.3.0 · 18 Ekim 2026
+
+- Hayalet modunda kota alanı tıklamaları arkaya geçirirken maskot tıklanabilir kalır. Maskot paneli açar; panel küçültülünce hayalet modu sürer.
+- Alt ile geçici panel eklendi. AltGr ayrı tutulur. Normal görünüm, tepsi ve geri çağırma kısayolu fare etkileşimini geri getirir.
+- Dolu geri çağırma kısayolu için iki alternatif eklenir; kullanılan kısayol ayarlarda gösterilir.
+- Görünüm değişirken Windows sabitlemesinin düşmesi düzeltildi. Önceki ayar açma/kapama kontrolü bu geçişi kapsamıyordu; gerçek pencere kontrolü genişletildi.
+
 ## 0.2.0 · 18 Ekim 2026
 
 - Antigravity'nin gerçek oturumları, proje klasörleri ve servis durumları ajan ekranına bağlandı. Süreç varlığı ile ölçülen çalışma durumu ayrı gösterilir.

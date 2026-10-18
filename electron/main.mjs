@@ -19,6 +19,8 @@ import { mergeRefresh } from "./quota.mjs";
 import { inventory } from "./system.mjs";
 import { PortManager } from "./ports.mjs";
 import { readSessions, focusProvider } from "./sessions.mjs";
+import { GhostMode, registerRecoveryShortcut } from "./ghost.mjs";
+import { loadAltReader } from "./windows-input.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 let win,
@@ -26,6 +28,8 @@ let win,
   timer,
   sessionTimer,
   sessionRefresh,
+  ghost,
+  ghostTimer,
   refreshing,
   quitting = false;
 const loginWindows = new Map();
@@ -49,9 +53,14 @@ let state = {
   refreshing: false,
   systemError: null,
   shortcutAvailable: false,
+  recoveryShortcut: null,
+  ghostAvailable: false,
+  ghostPeeking: false,
+  ghostError: null,
 };
 const notify = () => {
   state.settings = settings;
+  state.ghostPeeking = ghost?.peeking ?? false;
   win?.webContents.send("hud:update", state);
 };
 const safeError = (e) => ({
@@ -184,10 +193,14 @@ async function refresh() {
     });
   return refreshing;
 }
-function applyMode(mode) {
+function applyPin() {
+  // Electron's default Windows level moves the HWND behind the taskbar after activation.
+  win.setAlwaysOnTop(settings.alwaysOnTop, "pop-up-menu");
+}
+function applyMode(mode, peekAnchor) {
   if (!["dashboard", "panel", "compact"].includes(mode)) return;
-  win.setIgnoreMouseEvents(false);
-  settings.clickThrough = false;
+  const previousMode = state.mode;
+  const previous = win.getBounds();
   state.mode = mode;
   const size =
     mode === "compact"
@@ -201,10 +214,42 @@ function applyMode(mode) {
   );
   win.setSize(...size, true);
   if (mode !== "dashboard") {
-    const work = screen.getDisplayNearestPoint(win.getBounds()).workArea;
-    win.setPosition(work.x + work.width - size[0] - 24, work.y + 24, true);
+    const anchor = peekAnchor || previous;
+    const work = screen.getDisplayMatching(anchor).workArea;
+    const x = peekAnchor
+      ? anchor.x
+      : previousMode === "dashboard"
+        ? work.x + work.width - size[0] - 24
+        : previous.x + previous.width - size[0];
+    const y = peekAnchor
+      ? anchor.y
+      : previousMode === "dashboard"
+        ? work.y + 24
+        : previous.y;
+    win.setPosition(
+      Math.max(work.x, Math.min(x, work.x + work.width - size[0])),
+      Math.max(work.y, Math.min(y, work.y + work.height - size[1])),
+      true,
+    );
   }
-  win.setAlwaysOnTop(settings.alwaysOnTop);
+  applyPin();
+  notify();
+}
+function disableGhost() {
+  clearInterval(ghostTimer);
+  settings.clickThrough = false;
+  ghost?.disable();
+}
+function openMode(mode) {
+  if (!["dashboard", "panel", "compact"].includes(mode)) return;
+  if (mode === "dashboard") disableGhost();
+  if (ghost) ghost.open(mode);
+  else applyMode(mode);
+}
+function recoverWindow() {
+  disableGhost();
+  win.show();
+  win.focus();
   notify();
 }
 function setupTimer() {
@@ -275,6 +320,7 @@ async function createWindow() {
       ),
     };
   } catch {}
+  settings.clickThrough = false;
   win = new BrowserWindow({
     width: 1120,
     height: 940,
@@ -293,8 +339,37 @@ async function createWindow() {
       sandbox: true,
     },
   });
+  applyPin();
   win.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   win.webContents.on("will-navigate", (event) => event.preventDefault());
+  let altDown;
+  try {
+    altDown = loadAltReader();
+    altDown();
+    state.ghostAvailable = true;
+  } catch {
+    state.ghostAvailable = false;
+  }
+  ghost = new GhostMode({
+    bounds: () => win.getBounds(),
+    mode: () => state.mode,
+    visible: () => !win.isDestroyed() && win.isVisible() && !win.isMinimized(),
+    cursor: () => screen.getCursorScreenPoint(),
+    altDown: () => altDown(),
+    ignore: (value) => {
+      if (!win.isDestroyed())
+        win.setIgnoreMouseEvents(value, { forward: true });
+    },
+    show: applyMode,
+    failed: () => {
+      disableGhost();
+      state.ghostAvailable = false;
+      state.ghostError =
+        "Hayalet modu durduruldu. Pencere yeniden tıklanabilir.";
+      applyMode("panel");
+    },
+  });
+  ghost.disable();
   win.on("close", (e) => {
     if (!quitting) {
       e.preventDefault();
@@ -302,7 +377,7 @@ async function createWindow() {
     }
   });
   win.on("ready-to-show", () => {
-    if (settings.launchCompact) applyMode("compact");
+    if (settings.launchCompact) openMode("compact");
     win.show();
   });
   await win.loadFile(join(here, "../dist/index.html"));
@@ -317,14 +392,14 @@ async function createWindow() {
         label: "AgentHUD’ı aç",
         click: () => {
           win.show();
-          applyMode("dashboard");
+          openMode("dashboard");
         },
       },
       {
         label: "Küçük görünüm",
         click: () => {
           win.show();
-          applyMode("compact");
+          openMode("compact");
         },
       },
       { label: "Yenile", click: () => void refresh() },
@@ -338,23 +413,11 @@ async function createWindow() {
       },
     ]),
   );
-  tray.on("click", () => {
-    win.setIgnoreMouseEvents(false);
-    settings.clickThrough = false;
-    win.show();
-    win.focus();
-    notify();
-  });
-  state.shortcutAvailable = globalShortcut.register(
-    "CommandOrControl+Shift+H",
-    () => {
-      win.setIgnoreMouseEvents(false);
-      settings.clickThrough = false;
-      win.show();
-      win.focus();
-      notify();
-    },
+  tray.on("click", recoverWindow);
+  state.recoveryShortcut = registerRecoveryShortcut((accelerator) =>
+    globalShortcut.register(accelerator, recoverWindow),
   );
+  state.shortcutAvailable = !!state.recoveryShortcut;
   setupTimer();
   sessionTimer = setInterval(() => void refreshSessions(), 5000);
   void refresh();
@@ -391,10 +454,22 @@ handle("hud:settings", async (patch) => {
         message:
           "Geri çağırma kısayolu başka bir uygulamada kullanılıyor. Hayalet modu açılamadı.",
       };
-    settings.clickThrough = patch.clickThrough;
-    win.setIgnoreMouseEvents(settings.clickThrough, { forward: true });
+    if (patch.clickThrough && !state.ghostAvailable)
+      return {
+        ...state,
+        ok: false,
+        message: "Hayalet modu bu bilgisayarda başlatılamadı.",
+      };
+    if (patch.clickThrough) {
+      state.ghostError = null;
+      settings.clickThrough = true;
+      ghost.enable();
+      ghost.open("compact");
+      clearInterval(ghostTimer);
+      ghostTimer = setInterval(() => ghost.tick(), 40);
+    } else disableGhost();
   }
-  win.setAlwaysOnTop(settings.alwaysOnTop);
+  applyPin();
   setupTimer();
   await writeFile(
     join(app.getPath("userData"), "settings.json"),
@@ -404,7 +479,7 @@ handle("hud:settings", async (patch) => {
   return state;
 });
 handle("hud:window", (action) => {
-  if (["compact", "panel", "dashboard"].includes(action)) applyMode(action);
+  if (["compact", "panel", "dashboard"].includes(action)) openMode(action);
   else if (action === "minimize") win.minimize();
   else if (action === "close") win.hide();
   else if (action === "quit") {
@@ -412,6 +487,10 @@ handle("hud:window", (action) => {
     app.quit();
   }
   return state;
+});
+handle("hud:hotspot", (rectangle) => {
+  ghost.setHotspot(rectangle);
+  return { ok: true };
 });
 handle("hud:focus", async (provider) => {
   getProvider(provider);
@@ -445,6 +524,7 @@ app.on("before-quit", () => {
   quitting = true;
   clearInterval(timer);
   clearInterval(sessionTimer);
+  clearInterval(ghostTimer);
   globalShortcut.unregisterAll();
 });
 app.on("window-all-closed", () => {});

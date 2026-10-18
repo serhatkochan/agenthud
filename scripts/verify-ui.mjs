@@ -203,7 +203,7 @@ try {
     false,
   );
   await page.getByRole("button", { name: "Ayarları aç", exact: true }).click();
-  if (snapshot.shortcutAvailable) {
+  if (snapshot.shortcutAvailable && snapshot.ghostAvailable) {
     await page
       .getByRole("button", { name: "Hayalet modunu aç", exact: true })
       .click();
@@ -213,10 +213,15 @@ try {
       true,
     );
     assert.equal(
-      await application.evaluate(({ globalShortcut }) =>
-        globalShortcut.isRegistered("CommandOrControl+Shift+H"),
+      await application.evaluate(
+        ({ globalShortcut }, shortcut) => globalShortcut.isRegistered(shortcut),
+        snapshot.recoveryShortcut,
       ),
       true,
+    );
+    assert.equal(
+      (await page.evaluate(() => window.agenthud.snapshot())).mode,
+      "compact",
     );
   } else {
     const denied = await page.evaluate(() =>
@@ -239,6 +244,7 @@ try {
   await page.evaluate(() =>
     window.agenthud.setSettings({ clickThrough: false }),
   );
+  await page.evaluate(() => window.agenthud.window("panel"));
   await application.evaluate(({ BrowserWindow }) =>
     BrowserWindow.getAllWindows()[0].setSize(380, 720),
   );

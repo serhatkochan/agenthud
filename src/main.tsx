@@ -253,6 +253,7 @@ function App() {
   const [confirmPort, setConfirmPort] = useState<Port | null>(null);
   const [busy, setBusy] = useState(false);
   const modal = useRef<HTMLDialogElement>(null);
+  const mascotButton = useRef<HTMLButtonElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const announce = useCallback((message: string) => {
     setToast(message);
@@ -285,6 +286,27 @@ function App() {
     if (dialog || confirmPort) modal.current?.showModal();
     else modal.current?.close();
   }, [dialog, confirmPort]);
+  useEffect(() => {
+    if (snapshot?.mode !== "compact") {
+      void bridge.hotspot(null);
+      return;
+    }
+    setDialog(null);
+    setConfirmPort(null);
+    const element = mascotButton.current;
+    if (!element) return;
+    const report = () => {
+      const { x, y, width, height } = element.getBoundingClientRect();
+      void bridge.hotspot({ x, y, width, height });
+    };
+    const observer = new ResizeObserver(report);
+    observer.observe(element);
+    report();
+    return () => observer.disconnect();
+  }, [snapshot?.mode]);
+  useEffect(() => {
+    if (snapshot?.ghostError) announce(snapshot.ghostError);
+  }, [snapshot?.ghostError, announce]);
   const updateSettings = (patch: Partial<Settings>) =>
     void run(async () => {
       const r = await bridge.setSettings(patch);
@@ -337,13 +359,24 @@ function App() {
   return (
     <div className={`app mode-${s.mode}`}>
       {s.mode === "compact" ? (
-        <div className="compact-bar">
+        <div
+          className={`compact-bar ${s.settings.clickThrough ? "is-ghost" : ""}`}
+        >
           <button
             className="mascot-button"
+            ref={mascotButton}
             aria-label="Paneli genişlet"
+            title={
+              s.settings.clickThrough
+                ? "Paneli aç · Alt basılı tutarak geçici bakış"
+                : "Paneli aç"
+            }
             onClick={() => changeMode("panel")}
           >
             <Mascot mood={mood} small />
+            {s.settings.clickThrough && (
+              <i className="ghost-light" aria-hidden="true" />
+            )}
           </button>
           <span className="compact-divider" />
           {s.providers.map((p) => (
@@ -382,7 +415,7 @@ function App() {
                 <span />
                 <span />
               </span>
-              AgentHUD <span className="version">/ 0.2</span>
+              AgentHUD <span className="version">/ 0.3</span>
             </div>
             <div className="window-actions">
               <button
@@ -556,6 +589,21 @@ function App() {
                   </button>
                 </div>
               </header>
+              {s.settings.clickThrough && (
+                <div className="ghost-note" role="status">
+                  <Icon name="info" size={14} />
+                  <span>
+                    {s.ghostPeeking
+                      ? "Alt’ı bırakınca küçük çubuğa dönersin."
+                      : "Hayalet modu açık. Küçülttüğünde tıklamalar arkaya geçer."}
+                  </span>
+                  <button
+                    onClick={() => updateSettings({ clickThrough: false })}
+                  >
+                    Kapat
+                  </button>
+                </div>
+              )}
               {!isDesktop && (
                 <div className="preview-notice">
                   <Icon name="info" size={16} />
@@ -920,11 +968,13 @@ function App() {
               {s.mode !== "dashboard" && (
                 <button
                   className="subtle-button"
-                  disabled={!s.shortcutAvailable}
+                  disabled={!s.shortcutAvailable || !s.ghostAvailable}
                   title={
-                    s.shortcutAvailable
-                      ? ""
-                      : "Geri çağırma kısayolu başka bir uygulamada kullanılıyor."
+                    !s.ghostAvailable
+                      ? "Hayalet modu bu bilgisayarda başlatılamadı."
+                      : s.shortcutAvailable
+                        ? ""
+                        : "Geri çağırma kısayolu başka bir uygulamada kullanılıyor."
                   }
                   onClick={() => {
                     updateSettings({ clickThrough: true });
@@ -938,12 +988,21 @@ function App() {
             <p className="shortcut-note">
               {s.shortcutAvailable ? (
                 <>
-                  <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>H</kbd> ile geri
-                  çağırabilirsin.
+                  {s.recoveryShortcut?.split("+").map((key, i) => (
+                    <span key={i}>
+                      {i > 0 && " + "}
+                      <kbd>{key === "CommandOrControl" ? "Ctrl" : key}</kbd>
+                    </span>
+                  ))}{" "}
+                  ile geri çağırabilirsin.
                 </>
               ) : (
                 "Geri çağırma kısayolu kullanımda. Uygulamayı tepsi simgesinden açabilirsin."
               )}
+            </p>
+            <p className="shortcut-note">
+              Hayalet modunda maskota tıklayarak paneli açabilir, çubuğun
+              üzerindeyken <kbd>Alt</kbd> basılı tutarak geçici bakabilirsin.
             </p>
             <button
               className="quit-button"
