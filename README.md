@@ -22,7 +22,19 @@ Arayüz Rust ve Windows API ile çizilir. Çalışırken Electron, WebView veya 
 2. Cursor’da ve Codex uygulamasında veya CLI’da hesabına giriş yapmış ol. Codex plan limitleri için ChatGPT hesabıyla giriş gerekir; yalnızca API anahtarı yeterli değildir.
 3. Antigravity limitlerini de görmek için Antigravity’yi açık tut ve hesabına giriş yap.
 
-Ada ilk açılışta ekranın sağ üstünde görünür. Boş bir yerinden sürükleyerek taşıyabilir, **×** ile kapatabilirsin. Haklar **60 saniyede bir** yenilenir. Ayrı bir AgentHUD hesabı veya elle API anahtarı girişi gerekmez.
+Ada ilk açılışta ekranın sağ üstünde yatay özet olarak görünür. Başlıktaki **+** bütün limitleri açar, **−** yeniden küçültür. Boş bir yerinden sürükleyerek taşıyabilir, **×** ile kapatabilirsin. Pencere odaktayken Space veya Enter görünümü değiştirir; Escape bütün limitleri açar. Haklar **60 saniyede bir** yenilenir. Ayrı bir AgentHUD hesabı veya elle API anahtarı girişi gerekmez.
+
+### Küçük görünümde hangi hak seçilir?
+
+| Gösterge | Seçilen limit |
+| --- | --- |
+| **Codex** | Varsa 5 saatlik pencere; yoksa haftalık limit. |
+| **Cursor Models** | Yalnızca Cursor Models havuzu. Other Models onun yerine kullanılmaz. |
+| **Gemini** | Antigravity Gemini grubunun 5 saatlik limiti. |
+| **Argon** | Varsa 5 saatlik limit; yoksa mevcut haftalık limit. |
+| **Other Models** | Antigravity Other Models grubunun 5 saatlik limiti. |
+
+Kısa penceresi bulunmayan bir Antigravity grubunda mevcut haftalık limit gösterilir. **Bir grubun haftalık hakkı tükenmişse, küçük görünümde o grup %0 olur**; kısa pencerenin %100 dönmesi kullanılabilir hak olarak sunulmaz. Devre dışı bir pencere ise “kapalı” görünür. Eksik ölçümler %0’a çevrilmez.
 
 ## Hangi limitleri gösterir?
 
@@ -90,6 +102,8 @@ cargo build --release --manifest-path src-tauri/Cargo.toml
 ```text
 site/                         Statik tanıtım sayfası
 src-tauri/src/bar.rs           Şeffaf Windows adası ve otomatik yenileme
+src-tauri/src/bar/paint.rs     Yerel arayüz çizimi
+src-tauri/src/quota_view.rs    Küçük görünümde limit seçimi
 src-tauri/src/providers.rs     Kota okuma ve sağlayıcı bağlantıları
 src-tauri/src/system.rs        Yerel süreç / port keşfi
 src-tauri/src/models.rs        Veri yapıları
