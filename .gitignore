@@ -10,4 +10,7 @@ release/
 .pnpm-store/
 *.tsbuildinfo
 src-tauri/target/
+.vercel/
 src-tauri/gen/schemas/
+
+.vercel
