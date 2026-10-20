@@ -1,5 +1,19 @@
 # Değişiklikler
 
+## 0.10.0 · 20 Ekim 2026
+
+- Uygulama yatay özetle açılır. AgentHUD başlığındaki + bütün limitleri gösterir; − yeniden küçültür. Sağlayıcı başlıklarındaki C/A harf kutuları kaldırıldı.
+- Codex varsa 5 saatlik, yoksa haftalık limiti gösterir. Cursor özeti Cursor Models havuzunu kullanır. Antigravity’de Gemini, Argon ve Other Models ayrı kalır.
+- Bir grubun haftalık hakkı bitmişse, yatay özette o grubun kalan hakkı %0 görünür. Devre dışı veya eksik ölçümler kullanılabilir hak olarak sunulmaz.
+- Saydam ada, pencere boyutlandırma, ekran sınırları ve yazı çizimi güncellendi. Space / Enter görünümü değiştirir; Escape bütün limitleri açar.
+- Web önizlemesi ve README iki görünümü, seçim kurallarını ve güncel boyut / bellek ölçümlerini açıklar.
+
+## 0.9.0 · 20 Ekim 2026
+
+- Arayüz doğrudan Rust ve Windows API ile çizilen şeffaf bir kota adasına taşındı. Çalışma sırasında WebView2, Electron veya Node gerekmez.
+- Codex, Cursor ve Antigravity’nin ayrı kullanım havuzları masaüstünde gösterilir; ölçümler 60 saniyede bir yenilenir.
+- Windows 10 / 11 x64 için kurulum gerektirmeyen tek EXE yayınlandı.
+
 ## 0.8.0 · 18 Ekim 2026
 
 - Kullanıcı isteğiyle Ajanlar sekmesi, oturum durumu taraması, Cursor gözlemcisi ve pencereye odaklanma kaldırıldı. Kota radarı ve Yerel portlar kaldı.

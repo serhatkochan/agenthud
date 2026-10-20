@@ -8,13 +8,13 @@
   <a href="https://github.com/serhatkochan/agenthud/releases">Sürümler</a>
 </p>
 
-![AgentHUD kota adasının örnek verilerle hazırlanmış önizlemesi](site/assets/preview.jpg)
+![AgentHUD başlığı, küçültme düğmesi ve ayrı kota satırlarıyla güncel web önizlemesi](site/assets/preview.jpg)
 
-AgentHUD, AI araçlarında **ne kadar hakkın kaldığını** aynı yerde gösteren kompakt bir Windows uygulamasıdır. Şeffaf ada diğer pencerelerin üzerinde durur. İstediğin yere sürükle; koduna devam et.
+AgentHUD, AI araçlarında **ne kadar hakkın kaldığını** aynı yerde gösteren kompakt bir Windows uygulamasıdır. Şeffaf ada diğer pencerelerin üzerinde durur. Yatay özetle açılır; başlıktaki **+** bütün limitleri gösterir, **−** yeniden küçültür. İstediğin yere sürükle; koduna devam et.
 
 Arayüz Rust ve Windows API ile çizilir. Çalışırken Electron, WebView veya Node süreci açılmaz.
 
-> Görsel, örnek verilerle hazırlanmış etkileşimli web önizlemesidir. Gerçek uygulama, kendi hesabından dönen ölçümleri gösterir.
+> Görseller, örnek verilerle hazırlanmış web önizlemesidir. Gerçek uygulama, kendi hesabından dönen ölçümleri gösterir. [Sitedeki + / − düğmesiyle iki görünümü de deneyebilirsin.](https://agenthud.serhatkochan.com)
 
 ## İndir ve kullan
 
@@ -26,13 +26,15 @@ Ada ilk açılışta ekranın sağ üstünde yatay özet olarak görünür. Baş
 
 ### Küçük görünümde hangi hak seçilir?
 
+![AgentHUD yatay özeti: Codex, Cursor Models, Gemini, Argon ve Other Models; örnek veriler](site/assets/compact.jpg)
+
 | Gösterge | Seçilen limit |
 | --- | --- |
 | **Codex** | Varsa 5 saatlik pencere; yoksa haftalık limit. |
 | **Cursor Models** | Yalnızca Cursor Models havuzu. Other Models onun yerine kullanılmaz. |
-| **Gemini** | Antigravity Gemini grubunun 5 saatlik limiti. |
+| **Gemini** | Antigravity Gemini grubunun varsa 5 saatlik, yoksa haftalık limiti. |
 | **Argon** | Varsa 5 saatlik limit; yoksa mevcut haftalık limit. |
-| **Other Models** | Antigravity Other Models grubunun 5 saatlik limiti. |
+| **Other Models** | Antigravity Other Models grubunun varsa 5 saatlik, yoksa haftalık limiti. |
 
 Kısa penceresi bulunmayan bir Antigravity grubunda mevcut haftalık limit gösterilir. **Bir grubun haftalık hakkı tükenmişse, küçük görünümde o grup %0 olur**; kısa pencerenin %100 dönmesi kullanılabilir hak olarak sunulmaz. Devre dışı bir pencere ise “kapalı” görünür. Eksik ölçümler %0’a çevrilmez.
 
@@ -48,12 +50,14 @@ Yüzdeler **kalan hakkı** gösterir. Örneğin `%20`, o kullanım havuzunun %20
 
 Sıra yukarıdan aşağı **Codex → Cursor → Antigravity**. Her hesap aynı pencere ve model gruplarını sunmaz. Veri dönmeyen bir limit için yüzde uydurulmaz; devre dışı pencereler soluk görünür.
 
+Ayrı bir Claude hesabı bağlantısı bu sürümde bulunmuyor. Antigravity’nin Other Models satırındaki Claude/GPT hakkı, Antigravity’ye ait kullanım havuzudur; Claude hesabındaki limit ayrı tutulur.
+
 ## Boyut ve bellek
 
 | Ölçüm | Değer |
 | --- | --- |
-| v0.9.0 indirme boyutu | **5,2 MB** (5.205.504 bayt) |
-| Çalışma kümesi (RAM) | Bu cihazdaki anlık ölçümde yaklaşık **22 MB** |
+| v0.10.0 indirme boyutu | **5,2 MB** (5.224.960 bayt) |
+| Çalışma kümesi (RAM) | Bu cihazdaki ölçümlerde **20 ila 24 MB** |
 | Özel bellek (private bytes) | Aynı ölçümde yaklaşık **5 MB** |
 
 Bellek ölçümü 20 Ekim 2026’da çalışan Windows uygulamasından alındı. Çalışma kümesi, özel bellek ve dosya boyutu farklı ölçümlerdir. RAM tüketimi Windows’a, yenileme anına ve çalışma süresine göre değişir; bu değerler sabit bir üst sınır değildir.
@@ -110,6 +114,8 @@ src-tauri/src/models.rs        Veri yapıları
 ```
 
 Tanıtım sayfası `site/` içindeki HTML, CSS ve JavaScript dosyalarından oluşur; derleme adımı yoktur. Vercel, `vercel.json` üzerinden bu klasörü yayınlar.
+
+Sürüm notları [CHANGELOG.md](CHANGELOG.md) içinde. İndirme sayfasındaki `SHA256SUMS.txt`, yayınlanan EXE’nin dosya bütünlüğünü doğrulamak için kullanılabilir.
 
 ---
 

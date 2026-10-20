@@ -1,8 +1,8 @@
 [package]
 name = "agenthud"
-version = "0.8.0"
+version = "0.10.0"
 edition = "2021"
-description = "Yerel AI kota ve geliştirici paneli"
+description = "Kompakt Windows AI kota adası"
 
 [lib]
 name = "agenthud_lib"

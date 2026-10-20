@@ -25,4 +25,4 @@
 
 Yerel ekran görüntüleri `.cache/native-expanded.png` ve `.cache/native-compact.png` altında; bu dosyalar Git’e eklenmez.
 
-Bu çalışma yerel uygulama değişikliğidir. Yeni bir GitHub Release oluşturulmadı.
+Bu kontroller yerel arayüz geliştirmesinde alındı. v0.10.0 paketleme ve güncel bellek kontrolü `docs/LANDING_VERIFICATION.md` içinde kaydedilir.
