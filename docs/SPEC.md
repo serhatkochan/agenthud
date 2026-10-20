@@ -18,7 +18,7 @@ Ajanlar bölümü, oturum olaylarını okuma, Cursor gözlemcisi ve uygulama pen
 
 ## Teknik yaklaşım
 
-Rust + Tauri 2 + React 19 + TypeScript + Vite. `rusqlite` Cursor oturumunu salt okunur açar; `reqwest` HTTP isteklerini sınırlar. Rust çekirdeği kota, süreç/port keşfi, pencere yönetimi ve dar IPC sözleşmelerini sahiplenir. React yalnızca izin verilen komutlarla konuşur; genel dosya, kabuk veya HTTP yetkisi yoktur. Tauri, Windows WebView2 kullanır. Dağıtımda Electron veya Node yan süreç yoktur. Windows PowerShell yalnızca yerel envanter için kullanılır.
+Rust + Tauri 2 + React 19 + TypeScript + Vite. `rusqlite` Cursor oturumunu salt okunur açar; `reqwest` HTTP isteklerini sınırlar. Rust çekirdeği kota, süreç/port keşfi, pencere yönetimi ve dar IPC sözleşmelerini sahiplenir. React yalnızca izin verilen komutlarla konuşur; genel dosya, kabuk veya HTTP yetkisi yoktur. Tauri, Windows WebView2 kullanır. Dağıtımda Electron veya Node yan süreç yoktur. Süreç ve port envanteri Windows API ile okunur.
 
 ## Tasarım
 

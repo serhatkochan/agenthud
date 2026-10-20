@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AgentHUD — 4 MB’lık kota çubuğu</title>
+    <meta
+      name="description"
+      content="Cursor, Codex ve Antigravity kalan haklarını gösteren şeffaf Windows çubuğu. Görev Yöneticisi’nde yaklaşık 4 MB."
+    />
+    <link rel="icon" href="/favicon.ico" />
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #070807;
+        --text: #f3f5f3;
+        --muted: #9aa39c;
+        --line: rgba(255, 255, 255, 0.08);
+        --mint: #8fbfa4;
+        --amber: #d2b07a;
+        --red: #d0928b;
+      }
+      * { box-sizing: border-box; }
+      html, body { margin: 0; min-height: 100%; }
+      body {
+        font-family: "Segoe UI", ui-sans-serif, sans-serif;
+        background:
+          radial-gradient(900px 420px at 70% -10%, rgba(143, 191, 164, 0.08), transparent 60%),
+          var(--bg);
+        color: var(--text);
+      }
+      a { color: inherit; }
+      .wrap { width: min(880px, calc(100% - 32px)); margin: 0 auto; }
+      header, footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 22px 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      header a, footer a { text-decoration: none; }
+      header strong { color: var(--text); letter-spacing: -0.03em; }
+      h1 {
+        margin: 48px 0 12px;
+        font-size: clamp(40px, 7vw, 76px);
+        line-height: 0.95;
+        letter-spacing: -0.045em;
+        font-weight: 620;
+      }
+      h1 span { color: var(--mint); }
+      .lead { max-width: 520px; color: var(--muted); font-size: 18px; line-height: 1.5; }
+      .actions { display: flex; gap: 10px; margin: 28px 0 42px; flex-wrap: wrap; }
+      .download, .ghost {
+        display: inline-flex;
+        align-items: center;
+        min-height: 44px;
+        padding: 0 16px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-size: 14px;
+      }
+      .download { background: var(--text); color: #111; font-weight: 650; }
+      .ghost { border: 1px solid var(--line); color: var(--muted); }
+      .island {
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 22px;
+        background: rgba(16, 18, 16, 0.62);
+        backdrop-filter: blur(18px);
+        padding: 8px 8px 10px;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+      }
+      .row, .head {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 12px;
+        align-items: center;
+        min-height: 28px;
+        padding: 0 10px;
+        font-size: 13px;
+      }
+      .head { color: var(--muted); font-weight: 650; margin-top: 6px; }
+      .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 650; }
+      .ok { color: var(--mint); }
+      .mid { color: var(--amber); }
+      .low { color: var(--red); }
+      .note { margin-top: 14px; color: var(--muted); font-size: 12px; }
+      .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0 64px; }
+      .facts div { border-top: 1px solid var(--line); padding-top: 12px; }
+      .facts strong { display: block; font-size: 22px; letter-spacing: -0.04em; }
+      .facts span { color: var(--muted); font-size: 13px; }
+      @media (max-width: 700px) { .facts { grid-template-columns: 1fr; } }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <strong>AgentHUD</strong>
+        <a href="https://github.com/serhatkochan/agenthud">GitHub</a>
+      </header>
+      <h1>Kalan hak.<br /><span>4 MB.</span></h1>
+      <p class="lead">
+        Cursor, Codex ve Antigravity limitleri, masaüstünde duran şeffaf bir çubukta.
+        Tarayıcı motoru yok. Görev Yöneticisi’nde yaklaşık 4 MB.
+      </p>
+      <div class="actions">
+        <a class="download" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe">Windows için indir</a>
+        <a class="ghost" href="https://github.com/serhatkochan/agenthud">Kaynak kod</a>
+      </div>
+      <div class="island" aria-label="Örnek çubuk">
+        <div class="head"><span>Codex</span></div>
+        <div class="row"><span>Haftalık</span><span class="mid">55%</span></div>
+        <div class="head"><span>Cursor</span></div>
+        <div class="row"><span>Cursor Models</span><span class="low">19%</span></div>
+        <div class="row"><span>Other Models</span><span class="ok">100%</span></div>
+        <div class="head"><span>Antigravity</span></div>
+        <div class="row"><span>Gemini Models · Haftalık</span><span class="ok">66%</span></div>
+        <div class="row"><span>Gemini Models · 5 saatlik</span><span class="ok">91%</span></div>
+        <div class="row"><span>Other Models · Haftalık</span><span class="low">0%</span></div>
+        <div class="row"><span>Gemini 4 Argon · Haftalık</span><span class="low">8%</span></div>
+      </div>
+      <p class="note">Örnek görünüm. Uygulama senin hesabındaki gerçek kalan hakları gösterir.</p>
+      <section class="facts">
+        <div><strong>4 MB</strong><span>Görev Yöneticisi belleği</span></div>
+        <div><strong>Rust</strong><span>WebView ve Electron yok</span></div>
+        <div><strong>Yerel</strong><span>Oturum bu cihazda kalır</span></div>
+      </section>
+      <footer>
+        <a href="https://serhatkochan.com">serhatkochan.com</a>
+        <span>Windows 10 ve 11</span>
+      </footer>
+    </div>
+  </body>
+</html>
