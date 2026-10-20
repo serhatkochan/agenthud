@@ -3,132 +3,119 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AgentHUD — 4 MB’lık kota çubuğu</title>
-    <meta
-      name="description"
-      content="Cursor, Codex ve Antigravity kalan haklarını gösteren şeffaf Windows çubuğu. Görev Yöneticisi’nde yaklaşık 4 MB."
-    />
+    <meta name="theme-color" content="#f7f8fa" />
+    <title>AgentHUD | Limitlerin, gözünün önünde.</title>
+    <meta name="description" content="Codex, Cursor ve Antigravity kalan kullanım haklarını masaüstünde gör. Rust ile yazılmış, şeffaf ve kompakt Windows uygulaması. Tek dosya, kurulum gerektirmez." />
+    <link rel="canonical" href="https://agenthud.serhatkochan.com/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="tr_TR" />
+    <meta property="og:site_name" content="AgentHUD" />
+    <meta property="og:title" content="AgentHUD | Limitlerin, gözünün önünde." />
+    <meta property="og:description" content="Codex, Cursor ve Antigravity için masaüstünde küçük bir kota adası. Windows için indir." />
+    <meta property="og:url" content="https://agenthud.serhatkochan.com/" />
+    <meta property="og:image" content="https://agenthud.serhatkochan.com/assets/social.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="AgentHUD şeffaf kota adasının örnek verilerle hazırlanmış önizlemesi" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="icon" href="/favicon.ico" />
-    <style>
-      :root {
-        color-scheme: dark;
-        --bg: #070807;
-        --text: #f3f5f3;
-        --muted: #9aa39c;
-        --line: rgba(255, 255, 255, 0.08);
-        --mint: #8fbfa4;
-        --amber: #d2b07a;
-        --red: #d0928b;
-      }
-      * { box-sizing: border-box; }
-      html, body { margin: 0; min-height: 100%; }
-      body {
-        font-family: "Segoe UI", ui-sans-serif, sans-serif;
-        background:
-          radial-gradient(900px 420px at 70% -10%, rgba(143, 191, 164, 0.08), transparent 60%),
-          var(--bg);
-        color: var(--text);
-      }
-      a { color: inherit; }
-      .wrap { width: min(880px, calc(100% - 32px)); margin: 0 auto; }
-      header, footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 22px 0;
-        color: var(--muted);
-        font-size: 13px;
-      }
-      header a, footer a { text-decoration: none; }
-      header strong { color: var(--text); letter-spacing: -0.03em; }
-      h1 {
-        margin: 48px 0 12px;
-        font-size: clamp(40px, 7vw, 76px);
-        line-height: 0.95;
-        letter-spacing: -0.045em;
-        font-weight: 620;
-      }
-      h1 span { color: var(--mint); }
-      .lead { max-width: 520px; color: var(--muted); font-size: 18px; line-height: 1.5; }
-      .actions { display: flex; gap: 10px; margin: 28px 0 42px; flex-wrap: wrap; }
-      .download, .ghost {
-        display: inline-flex;
-        align-items: center;
-        min-height: 44px;
-        padding: 0 16px;
-        border-radius: 999px;
-        text-decoration: none;
-        font-size: 14px;
-      }
-      .download { background: var(--text); color: #111; font-weight: 650; }
-      .ghost { border: 1px solid var(--line); color: var(--muted); }
-      .island {
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 22px;
-        background: rgba(16, 18, 16, 0.62);
-        backdrop-filter: blur(18px);
-        padding: 8px 8px 10px;
-        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-      }
-      .row, .head {
-        display: grid;
-        grid-template-columns: 1fr auto;
-        gap: 12px;
-        align-items: center;
-        min-height: 28px;
-        padding: 0 10px;
-        font-size: 13px;
-      }
-      .head { color: var(--muted); font-weight: 650; margin-top: 6px; }
-      .row span:last-child { font-variant-numeric: tabular-nums; font-weight: 650; }
-      .ok { color: var(--mint); }
-      .mid { color: var(--amber); }
-      .low { color: var(--red); }
-      .note { margin-top: 14px; color: var(--muted); font-size: 12px; }
-      .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 28px 0 64px; }
-      .facts div { border-top: 1px solid var(--line); padding-top: 12px; }
-      .facts strong { display: block; font-size: 22px; letter-spacing: -0.04em; }
-      .facts span { color: var(--muted); font-size: 13px; }
-      @media (max-width: 700px) { .facts { grid-template-columns: 1fr; } }
-    </style>
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="/site.js" defer></script>
   </head>
   <body>
-    <div class="wrap">
-      <header>
-        <strong>AgentHUD</strong>
-        <a href="https://github.com/serhatkochan/agenthud">GitHub</a>
-      </header>
-      <h1>Kalan hak.<br /><span>4 MB.</span></h1>
-      <p class="lead">
-        Cursor, Codex ve Antigravity limitleri, masaüstünde duran şeffaf bir çubukta.
-        Tarayıcı motoru yok. Görev Yöneticisi’nde yaklaşık 4 MB.
-      </p>
-      <div class="actions">
-        <a class="download" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe">Windows için indir</a>
-        <a class="ghost" href="https://github.com/serhatkochan/agenthud">Kaynak kod</a>
-      </div>
-      <div class="island" aria-label="Örnek çubuk">
-        <div class="head"><span>Codex</span></div>
-        <div class="row"><span>Haftalık</span><span class="mid">55%</span></div>
-        <div class="head"><span>Cursor</span></div>
-        <div class="row"><span>Cursor Models</span><span class="low">19%</span></div>
-        <div class="row"><span>Other Models</span><span class="ok">100%</span></div>
-        <div class="head"><span>Antigravity</span></div>
-        <div class="row"><span>Gemini Models · Haftalık</span><span class="ok">66%</span></div>
-        <div class="row"><span>Gemini Models · 5 saatlik</span><span class="ok">91%</span></div>
-        <div class="row"><span>Other Models · Haftalık</span><span class="low">0%</span></div>
-        <div class="row"><span>Gemini 4 Argon · Haftalık</span><span class="low">8%</span></div>
-      </div>
-      <p class="note">Örnek görünüm. Uygulama senin hesabındaki gerçek kalan hakları gösterir.</p>
-      <section class="facts">
-        <div><strong>4 MB</strong><span>Görev Yöneticisi belleği</span></div>
-        <div><strong>Rust</strong><span>WebView ve Electron yok</span></div>
-        <div><strong>Yerel</strong><span>Oturum bu cihazda kalır</span></div>
+    <a class="skip-link" href="#icerik">İçeriğe geç</a>
+    <header class="header shell">
+      <a class="brand" href="#" aria-label="AgentHUD, sayfa başı"><img src="/favicon.ico" alt="" width="28" height="28" />AgentHUD<span class="brand-platform">Windows için</span></a>
+      <nav aria-label="Ana menü">
+        <a class="nav-detail" href="#limitler">Neler gösterir?</a>
+        <a class="nav-source" href="https://github.com/serhatkochan/agenthud">GitHub <span aria-hidden="true">↗</span></a>
+        <a class="nav-download" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe">İndir <svg aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v9m-4-4 4 4 4-4M4 13v4h12v-4" /></svg></a>
+      </nav>
+    </header>
+
+    <main id="icerik">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="intro">Kodun açıkken, limitlerin de gözünün önünde.</p>
+          <h1 id="hero-title">Bir gözün<br />kodunda.<br /><span>Diğeri burada.</span></h1>
+          <p class="hero-description">Codex, Cursor ve Antigravity’de kalan haklarını tek bakışta gör. Masaüstünde küçük, şeffaf bir ada. Tam ihtiyacın kadar.</p>
+          <a class="button button-primary" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe"><svg class="windows-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M2 3h7v7H2zm9 0h7v7h-7zM2 12h7v7H2zm9 0h7v7h-7z" /></svg>Windows için indir<svg class="download-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v9m-4-4 4 4 4-4M4 14v3h12v-3" /></svg></a>
+          <p class="download-note">Windows 10 / 11 · Kurulumsuz · v0.9.0 · 5,2 MB</p>
+          <a class="text-link" href="https://github.com/serhatkochan/agenthud">Kaynak koduna göz at <span aria-hidden="true">↗</span></a>
+        </div>
+
+        <figure class="product-preview" aria-labelledby="preview-caption">
+          <div class="desktop" id="desktop" data-wallpaper="light">
+            <div class="desktop-top" aria-hidden="true"><span>Masaüstün</span><span>AgentHUD</span></div>
+            <div class="wallpaper-fold fold-one" aria-hidden="true"></div>
+            <div class="wallpaper-fold fold-two" aria-hidden="true"></div>
+            <div class="wallpaper-fold fold-three" aria-hidden="true"></div>
+            <div class="island" id="island" role="group" aria-label="AgentHUD, örnek kota görünümü">
+              <div class="island-top">
+                <button class="drag-handle" id="drag-handle" type="button" aria-label="Önizlemeyi taşı. Sürükle veya ok tuşlarını kullan."><span class="handle-mark" aria-hidden="true"></span><span>AgentHUD</span></button>
+                <span class="island-column">kalan</span>
+              </div>
+              <section class="quota-group" aria-label="Codex limitleri">
+                <h3><span class="provider-symbol" aria-hidden="true">C</span>Codex</h3>
+                <dl><div class="quota-row"><dt>5 saatlik</dt><dd>82<span>%</span></dd></div><div class="quota-row"><dt>Haftalık</dt><dd>54<span>%</span></dd></div></dl>
+              </section>
+              <section class="quota-group" aria-label="Cursor limitleri">
+                <h3><span class="provider-symbol" aria-hidden="true">C</span>Cursor</h3>
+                <dl><div class="quota-row"><dt>Cursor Models</dt><dd class="warning">21<span>%</span></dd></div><div class="quota-row"><dt>Other Models</dt><dd>100<span>%</span></dd></div></dl>
+              </section>
+              <section class="quota-group" aria-label="Antigravity limitleri">
+                <h3><span class="provider-symbol" aria-hidden="true">A</span>Antigravity</h3>
+                <dl><div class="quota-row"><dt>Gemini Models <span>· Haftalık</span></dt><dd>66<span>%</span></dd></div><div class="quota-row"><dt>Gemini Models <span>· 5 saatlik</span></dt><dd>91<span>%</span></dd></div><div class="quota-row"><dt>Other Models <span>· Haftalık</span></dt><dd class="danger">0<span>%</span></dd></div><div class="quota-row inactive"><dt>Other Models <span>· 5 saatlik</span></dt><dd>Kapalı</dd></div><div class="quota-row"><dt>Gemini 4 Argon <span>· Haftalık</span></dt><dd class="warning">8<span>%</span></dd></div></dl>
+              </section>
+            </div>
+            <div class="desktop-hint" aria-hidden="true"><span class="hint-line"></span>Az yer kaplar. Hep göz önünde.</div>
+          </div>
+          <figcaption id="preview-caption">
+            <div class="preview-caption-copy"><span class="preview-dot" aria-hidden="true"></span><span>Örnek verilerle önizleme<span class="drag-tip"> · Adayı sürükle</span></span></div>
+            <div class="wallpaper-controls" role="group" aria-label="Önizleme masaüstü rengi"><button type="button" class="wallpaper-choice light-choice" data-wallpaper-choice="light" aria-label="Açık masaüstü" aria-pressed="true"></button><button type="button" class="wallpaper-choice dark-choice" data-wallpaper-choice="dark" aria-label="Koyu masaüstü" aria-pressed="false"></button></div>
+          </figcaption>
+        </figure>
       </section>
-      <footer>
-        <a href="https://serhatkochan.com">serhatkochan.com</a>
-        <span>Windows 10 ve 11</span>
-      </footer>
-    </div>
+
+      <div class="specs shell" aria-label="Uygulama özellikleri">
+        <p><strong>Rust ile yazıldı.</strong><span>Doğrudan Windows arayüzü.</span></p>
+        <p><strong>60 saniyede bir.</strong><span>Hakların kendiliğinden yenilenir.</span></p>
+        <p><strong>Tek bir .exe.</strong><span>İndir, aç, masaüstüne yerleştir.</span></p>
+      </div>
+
+      <section class="limits shell" id="limitler" aria-labelledby="limits-title">
+        <div class="section-copy"><p class="section-label">Her havuz, ayrı satırda.</p><h2 id="limits-title">Tek bir yüzde<br />her şeyi anlatmaz.</h2><p>Haftalık hakkın başka, 5 saatlik penceren başka. AgentHUD bunları birbiriyle karıştırmadan, hesabının sunduğu hâliyle gösterir.</p><p class="small-note">Yüzdeler kullanılanı değil, <strong>kalan hakkını</strong> gösterir. Kapanmış pencereler soluk görünür.</p></div>
+        <div class="provider-list">
+          <article class="provider-entry"><div class="provider-name"><span class="provider-number">01</span><h3>Codex</h3></div><div><p>Planının kullanım pencereleri.</p><p class="provider-detail">Hesabından dönen 5 saatlik, haftalık veya aylık limitler kendi satırında.</p></div></article>
+          <article class="provider-entry"><div class="provider-name"><span class="provider-number">02</span><h3>Cursor</h3></div><div><p>Cursor Models ve Other Models.</p><p class="provider-detail">İki ayrı kullanım havuzu. Birinde kalan hak, diğerinin üzerine yazılmaz.</p></div></article>
+          <article class="provider-entry"><div class="provider-name"><span class="provider-number">03</span><h3>Antigravity</h3></div><div><p>Model grupları ve zaman pencereleri.</p><p class="provider-detail">Gemini, Other Models, Gemini 4 Argon ve servisin döndürdüğü diğer gruplar. Haftalık ve 5 saatlik limitler ayrı ayrı.</p></div></article>
+        </div>
+      </section>
+
+      <section class="setup-section" id="nasil-calisir" aria-labelledby="setup-title">
+        <div class="setup shell">
+          <div class="section-copy"><p class="section-label">Alıştığın hesaplarla.</p><h2 id="setup-title">İndir. Aç.<br />Kaldığın yerden.</h2><p>Ayrı bir AgentHUD hesabı açmana gerek yok. Zaten giriş yaptığın uygulamalardaki oturumlar kullanılır.</p></div>
+          <div class="setup-content">
+            <div class="setup-step"><span aria-hidden="true">1</span><div><h3>Dosyayı aç.</h3><p><a href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe">AgentHUD.exe’yi indir</a> ve çalıştır. Adayı istediğin yere sürükle. Diğer pencerelerin üzerinde durur; × ile kapanır.</p></div></div>
+            <div class="setup-step"><span aria-hidden="true">2</span><div><h3>Mevcut oturumlarınla bağlan.</h3><p>Cursor’da ve Codex uygulamasında veya CLI’da giriş yapmış ol. Antigravity limitleri için Antigravity’yi de açık tut.</p></div></div>
+            <div class="privacy-note"><svg aria-hidden="true" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2" /><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2" /></svg><p>Oturum bilgileri cihazından okunur. Cursor ve Codex kullanım sorguları doğrudan kendi sağlayıcılarına, Antigravity sorguları yerel servisine gider.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="questions shell" aria-labelledby="questions-title">
+        <div class="section-copy"><p class="section-label">İndirmeden önce.</p><h2 id="questions-title">Birkaç küçük detay.</h2></div>
+        <div class="question-list">
+          <details><summary>Gerçekte ne kadar bellek kullanıyor?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>20 Ekim 2026’daki bu Windows ölçümünde yaklaşık <strong>22 MB çalışma kümesi</strong> ve <strong>5 MB özel bellek</strong>. Bunlar farklı bellek ölçümleri; indirme boyutu ise 5,2 MB. Kullanım, Windows’a ve çalışma durumuna göre değişir.</p><p>Arayüz Rust ve Windows API ile çizilir. Electron, WebView veya Node süreci çalıştırılmaz.</p></div></details>
+          <details><summary>API anahtarı girmem gerekiyor mu?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>Hayır. AgentHUD mevcut uygulama oturumlarını okur. Codex plan limitleri için Codex’e ChatGPT hesabınla giriş yapmış olmalısın; yalnızca API anahtarıyla giriş yeterli değildir.</p></div></details>
+          <details><summary>Bir aracın limiti görünmüyorsa?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>İlgili uygulamada oturumunu kontrol et. Antigravity’nin açık olması gerekir. Her hesap aynı limitleri sunmaz; sağlayıcının döndürmediği bir pencere için yüzde üretilmez. AgentHUD dakikada bir yeniden sorgular.</p></div></details>
+          <details><summary>Bu araçların resmi uygulaması mı?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>AgentHUD, Serhat Kochan’ın geliştirdiği bağımsız bir araçtır. OpenAI, Cursor veya Google’ın resmi ürünü değildir. Kullanım servislerindeki değişiklikler bağlantıları etkileyebilir.</p></div></details>
+        </div>
+      </section>
+
+      <section class="closing shell" aria-label="Windows için indir"><div><p class="section-label">Masaüstüne küçük bir ek.</p><h2>Bir bakışta,<br /><span>ne kadar kaldığını bil.</span></h2></div><div class="closing-action"><a class="button button-primary" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe"><svg class="windows-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M2 3h7v7H2zm9 0h7v7h-7zM2 12h7v7H2zm9 0h7v7h-7z" /></svg>Windows için indir</a><p class="download-note">v0.9.0 · Windows 10 / 11 · 5,2 MB</p></div></section>
+    </main>
+
+    <footer class="footer shell"><a class="brand" href="#">AgentHUD</a><p><a href="https://serhatkochan.com">Serhat Kochan</a> tarafından geliştirildi.</p><div><a href="https://github.com/serhatkochan/agenthud#readme">Dokümantasyon</a><a href="https://github.com/serhatkochan/agenthud/releases">Sürümler <span aria-hidden="true">↗</span></a></div></footer>
   </body>
 </html>
