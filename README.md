@@ -3,7 +3,7 @@
 <p align="center">Codex, Cursor ve Antigravity limitlerin, masaüstünde küçük bir adada.</p>
 
 <p align="center">
-  <a href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe"><strong>Windows için indir</strong></a> ·
+  <a href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD-Setup.exe"><strong>Windows için indir</strong></a> ·
   <a href="https://agenthud.serhatkochan.com">Web sitesi</a> ·
   <a href="https://github.com/serhatkochan/agenthud/releases">Sürümler</a>
 </p>
@@ -18,11 +18,17 @@ Arayüz Rust ve Windows API ile çizilir. Çalışırken Electron, WebView veya 
 
 ## İndir ve kullan
 
-1. [AgentHUD.exe’yi indir](https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe) ve aç. Windows 10 / 11, x64. Kurulum gerektirmez.
+1. [AgentHUD-Setup.exe’yi indir](https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD-Setup.exe) ve kurulumu tamamla. Windows 10 / 11, x64. Masaüstünde oluşan **AgentHUD** kısayolundan açabilirsin.
 2. Cursor’da ve Codex uygulamasında veya CLI’da hesabına giriş yapmış ol. Codex plan limitleri için ChatGPT hesabıyla giriş gerekir; yalnızca API anahtarı yeterli değildir.
 3. Antigravity limitlerini de görmek için Antigravity’yi açık tut ve hesabına giriş yap.
 
 Ada ilk açılışta ekranın sağ üstünde yatay özet olarak görünür. Başlıktaki **+** bütün limitleri açar, **−** yeniden küçültür. Boş bir yerinden sürükleyerek taşıyabilir, **×** ile kapatabilirsin. Pencere odaktayken Space veya Enter görünümü değiştirir; Escape bütün limitleri açar. Haklar **60 saniyede bir** yenilenir. Ayrı bir AgentHUD hesabı veya elle API anahtarı girişi gerekmez.
+
+Uygulama görev çubuğunda yer kaplamaz. **× uygulamayı tamamen kapatır**; yeniden açmak için masaüstü kısayolunu kullan.
+
+Kurulum yalnızca mevcut kullanıcıya, varsayılan olarak `%LOCALAPPDATA%\Programs\AgentHUD` klasörüne yapılır. Masaüstü ve Başlat menüsü kısayolları oluşturulur. Windows’un uygulama kaldırma listesinden kaldırabilirsin. Windows açılışında otomatik başlatma eklenmez.
+
+Kurulumsuz kullanım için [AgentHUD.exe](https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe) de sürüm dosyalarında bulunur.
 
 ### Küçük görünümde hangi hak seçilir?
 
@@ -56,11 +62,12 @@ Ayrı bir Claude hesabı bağlantısı bu sürümde bulunmuyor. Antigravity’ni
 
 | Ölçüm | Değer |
 | --- | --- |
-| v0.10.0 indirme boyutu | **5,2 MB** (5.224.960 bayt) |
-| Çalışma kümesi (RAM) | Bu cihazdaki ölçümlerde **20 ila 24 MB** |
+| v0.10.1 kurulum EXE’si | **2,1 MB** (2.093.282 bayt) |
+| Uygulama EXE’si | **5,2 MB** (5.227.008 bayt) |
+| Çalışma kümesi (RAM) | Son canlı ölçümde **27,4 MB** |
 | Özel bellek (private bytes) | Aynı ölçümde yaklaşık **5 MB** |
 
-Bellek ölçümü 20 Ekim 2026’da çalışan Windows uygulamasından alındı. Çalışma kümesi, özel bellek ve dosya boyutu farklı ölçümlerdir. RAM tüketimi Windows’a, yenileme anına ve çalışma süresine göre değişir; bu değerler sabit bir üst sınır değildir.
+Bellek ölçümü 23 Ekim 2026’da çalışan Windows uygulamasından alındı. Çalışma kümesi, özel bellek ve dosya boyutu farklı ölçümlerdir. RAM tüketimi Windows’a, yenileme anına ve çalışma süresine göre değişir; bu değerler sabit bir üst sınır değildir.
 
 ## Oturum ve veri akışı
 
@@ -100,6 +107,15 @@ cargo build --release --manifest-path src-tauri/Cargo.toml
 ```
 
 Çıktı: `src-tauri/target/release/agenthud.exe`.
+
+Kurulum paketi için NSIS 3 gerekir. Paketleme komutu `release/AgentHUD-Setup.exe`, `release/AgentHUD.exe` ve `release/SHA256SUMS.txt` üretir:
+
+```powershell
+.\scripts\package-windows.ps1
+
+# Kurulum / kaldırma ve kısayol kontrolü; masaüstü yerine yalıtılmış test klasörü kullanır.
+.\scripts\test-installer.ps1 -Makensis 'C:\Program Files (x86)\NSIS\makensis.exe'
+```
 
 `src-tauri` klasör adı eski Tauri sürümünden kalır; güncel uygulama doğrudan Windows API kullanır.
 

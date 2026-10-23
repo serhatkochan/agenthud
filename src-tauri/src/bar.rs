@@ -28,18 +28,19 @@ use windows_sys::Win32::{
             DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2,
         },
         WindowsAndMessaging::{
-            CreateWindowExW, DefWindowProcW, DispatchMessageW, FindWindowW, GetClientRect,
-            GetMessageW, GetWindowRect, LoadCursorW, LoadIconW, PostMessageW, PostQuitMessage,
-            RegisterClassW, SetForegroundWindow, SetWindowPos, ShowWindow, SystemParametersInfoW,
-            TranslateMessage, CS_HREDRAW, CS_VREDRAW, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW,
-            SPI_GETWORKAREA, SWP_NOACTIVATE, SW_SHOW, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND,
-            WM_KEYDOWN, WM_LBUTTONUP, WM_NCHITTEST, WM_PAINT, WNDCLASSW, WS_EX_APPWINDOW,
-            WS_EX_LAYERED, WS_EX_TOPMOST, WS_POPUP, WS_VISIBLE,
+            CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, FindWindowW,
+            GetClientRect, GetMessageW, GetWindowRect, LoadCursorW, LoadIconW, PostMessageW,
+            PostQuitMessage, RegisterClassW, SetForegroundWindow, SetWindowPos, ShowWindow,
+            SystemParametersInfoW, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HTCAPTION, HTCLIENT,
+            HWND_TOPMOST, IDC_ARROW, SPI_GETWORKAREA, SWP_NOACTIVATE, SW_SHOW, WM_DESTROY,
+            WM_DPICHANGED, WM_ERASEBKGND, WM_KEYDOWN, WM_LBUTTONUP, WM_NCHITTEST, WM_PAINT,
+            WNDCLASSW, WS_EX_LAYERED, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_VISIBLE,
         },
     },
 };
 
 const REPAINT: u32 = 0x8000;
+const WINDOW_EX_STYLE: u32 = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
 const NAMES: [&str; 3] = ["Codex", "Cursor", "Antigravity"];
 const IDS: [&str; 3] = ["codex", "cursor", "antigravity"];
 const PANEL_WIDTH: i32 = 368;
@@ -135,7 +136,7 @@ pub fn run() {
         let (x, y) = place(width, height);
         let title = wide("AgentHUD");
         let hwnd = CreateWindowExW(
-            WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_APPWINDOW,
+            WINDOW_EX_STYLE,
             class.as_ptr(),
             title.as_ptr(),
             WS_POPUP | WS_VISIBLE,
@@ -168,6 +169,7 @@ pub fn run() {
             TranslateMessage(&message);
             DispatchMessageW(&message);
         }
+        runtime.shutdown_background();
     }
 }
 
@@ -386,7 +388,7 @@ unsafe extern "system" fn wndproc(
         WM_NCHITTEST => hit(hwnd, lparam),
         WM_LBUTTONUP => {
             if in_close(hwnd, lparam) {
-                PostQuitMessage(0);
+                DestroyWindow(hwnd);
             } else if toggle_rect(hwnd).contains(
                 (lparam & 0xffff) as i16 as i32,
                 ((lparam >> 16) & 0xffff) as i16 as i32,
@@ -417,6 +419,7 @@ unsafe extern "system" fn wndproc(
             0
         }
         WM_DESTROY => {
+            WINDOW.store(0, Ordering::Relaxed);
             PostQuitMessage(0);
             0
         }
@@ -502,6 +505,61 @@ fn toggle_rect(hwnd: HWND) -> BoxRect {
 mod tests {
     use super::{lines, percent_text, NAMES};
     use serde_json::json;
+
+    #[test]
+    fn floating_window_avoids_taskbar_and_close_destroys_it() {
+        use super::*;
+        use windows_sys::Win32::UI::WindowsAndMessaging::{
+            GetWindowLongW, IsWindow, PeekMessageW, UnregisterClassW, GWL_EXSTYLE, PM_REMOVE,
+            WM_QUIT, WS_EX_APPWINDOW,
+        };
+        unsafe {
+            let instance = GetModuleHandleW(std::ptr::null());
+            let class = wide("AgentHUD.WindowLifecycleTest");
+            let mut info: WNDCLASSW = std::mem::zeroed();
+            info.lpfnWndProc = Some(wndproc);
+            info.hInstance = instance;
+            info.lpszClassName = class.as_ptr();
+            assert_ne!(RegisterClassW(&info), 0);
+            let hwnd = CreateWindowExW(
+                WINDOW_EX_STYLE,
+                class.as_ptr(),
+                class.as_ptr(),
+                WS_POPUP,
+                0,
+                0,
+                692,
+                50,
+                std::ptr::null_mut(),
+                std::ptr::null_mut(),
+                instance,
+                std::ptr::null(),
+            );
+            assert!(!hwnd.is_null());
+            let style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+            let close = close_rect(hwnd);
+            let x = (close.left + close.right) / 2;
+            let y = (close.top + close.bottom) / 2;
+            wndproc(hwnd, WM_LBUTTONUP, 0, ((y << 16) | x) as LPARAM);
+            let closed = IsWindow(hwnd) == 0;
+            if !closed {
+                DestroyWindow(hwnd);
+            }
+            let mut message = std::mem::zeroed();
+            let quit = PeekMessageW(
+                &mut message,
+                std::ptr::null_mut(),
+                WM_QUIT,
+                WM_QUIT,
+                PM_REMOVE,
+            );
+            UnregisterClassW(class.as_ptr(), instance);
+            assert_ne!(style & WS_EX_TOOLWINDOW, 0);
+            assert_eq!(style & WS_EX_APPWINDOW, 0);
+            assert!(closed, "× must destroy the window instead of hiding it");
+            assert_ne!(quit, 0, "closing the window must end the message loop");
+        }
+    }
 
     #[test]
     fn every_window_stays_visible_under_its_group() {

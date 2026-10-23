@@ -1,6 +1,6 @@
 [package]
 name = "agenthud"
-version = "0.10.0"
+version = "0.10.1"
 edition = "2021"
 description = "Kompakt Windows AI kota adası"
 

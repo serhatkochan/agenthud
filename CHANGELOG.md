@@ -1,5 +1,12 @@
 # Değişiklikler
 
+## 0.10.1 · 23 Ekim 2026
+
+- Windows kurulum EXE’si eklendi. Kurulum mevcut kullanıcıya yapılır; masaüstü ve Başlat menüsü kısayolları ile Windows uygulama kaldırma kaydı oluşturur.
+- Ada görev çubuğunda ve Alt+Tab listesinde yer kaplamaz. × pencereyi yok eder ve uygulamayı tamamen kapatır; kapanış, arka plandaki kota sorgusunu beklemez.
+- Site ve README indirme düğmeleri doğrudan kurulum EXE’sini indirir. Taşınabilir EXE ayrıca sürüm dosyalarında bulunur.
+- Paketleme, kısayol hedefleri, dosya bütünlüğü ve kaldırma temizliği için yalıtılmış kurulum testi eklendi.
+
 ## 0.10.0 · 20 Ekim 2026
 
 - Uygulama yatay özetle açılır. AgentHUD başlığındaki + bütün limitleri gösterir; − yeniden küçültür. Sağlayıcı başlıklarındaki C/A harf kutuları kaldırıldı.
