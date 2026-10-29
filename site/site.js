@@ -38,7 +38,7 @@ function moveIsland(x, y) {
 function updateHint() {
   previewHint.textContent = island.dataset.view === 'compact' && summary.scrollWidth > summary.clientWidth
     ? 'Özeti yana kaydır; + ile bütün limitleri aç.'
-    : '− ile küçült. + ile bütün limitleri aç.';
+    : 'Kontroller için imleci adanın üzerine getir.';
 }
 
 function setExpanded(expanded) {

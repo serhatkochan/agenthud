@@ -13,7 +13,7 @@
     <meta property="og:title" content="AgentHUD | Limitlerin, gözünün önünde." />
     <meta property="og:description" content="Codex, Cursor ve Antigravity için masaüstünde küçük bir kota adası. Windows için indir." />
     <meta property="og:url" content="https://agenthud.serhatkochan.com/" />
-    <meta property="og:image" content="https://agenthud.serhatkochan.com/assets/social.jpg?v=0.10.0" />
+    <meta property="og:image" content="https://agenthud.serhatkochan.com/assets/social.jpg?v=0.10.2" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="AgentHUD şeffaf kota adasının örnek verilerle hazırlanmış önizlemesi" />
@@ -38,9 +38,9 @@
         <div class="hero-copy">
           <p class="intro">Kodun açıkken, limitlerin de gözünün önünde.</p>
           <h1 id="hero-title">Bir gözün<br />kodunda.<br /><span>Diğeri burada.</span></h1>
-          <p class="hero-description">Codex, Cursor ve Antigravity’de kalan hakların, masaüstünde küçük ve şeffaf bir adada. Yatay özete göz at; bütün limitleri + ile aç.</p>
+          <p class="hero-description">Codex, Cursor ve Antigravity’de kalan hakların, masaüstünde küçük ve şeffaf bir adada. Kontroller için adanın üzerine gel.</p>
           <a class="button button-primary" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD-Setup.exe"><svg class="windows-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M2 3h7v7H2zm9 0h7v7h-7zM2 12h7v7H2zm9 0h7v7h-7z" /></svg>Windows için indir<svg class="download-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M10 3v9m-4-4 4 4 4-4M4 14v3h12v-3" /></svg></a>
-          <p class="download-note">Windows 10 / 11 · Masaüstü kısayolu · v0.10.1 · 2,1 MB</p>
+          <p class="download-note">Windows 10 / 11 · Masaüstü kısayolu · v0.10.2 · 2,1 MB</p>
           <a class="text-link" href="https://github.com/serhatkochan/agenthud">Kaynak koduna göz at <span aria-hidden="true">↗</span></a>
         </div>
 
@@ -52,9 +52,8 @@
             <div class="wallpaper-fold fold-three" aria-hidden="true"></div>
             <div class="island" id="island" data-view="expanded" role="group" aria-label="AgentHUD, örnek kota görünümü">
               <div class="island-top">
-                <button class="drag-handle" id="drag-handle" type="button" aria-label="AgentHUD önizlemesini taşı. Sürükle veya ok tuşlarını kullan.">AgentHUD</button>
+                <button class="drag-handle" id="drag-handle" type="button" aria-label="Önizlemeyi taşı. Sürükle veya ok tuşlarını kullan."></button>
                 <button class="island-control" id="view-toggle" type="button" aria-label="Yatay özete küçült" aria-expanded="true" aria-controls="quota-details quota-summary">−</button>
-                <span class="island-column">kalan</span>
                 <button class="island-control island-close" id="preview-close" type="button" aria-label="Önizlemeyi kapat">×</button>
               </div>
               <div id="quota-details">
@@ -79,7 +78,7 @@
                 <div class="summary-item"><dt>Other Models</dt><dd class="danger">0<span>%</span><small>5 saatlik</small></dd></div>
               </dl>
             </div>
-            <div class="desktop-hint"><span class="hint-line" aria-hidden="true"></span><span id="preview-hint">− ile küçült. + ile bütün limitleri aç.</span><button id="preview-reopen" type="button" hidden>Önizlemeyi aç</button></div>
+            <div class="desktop-hint"><span class="hint-line" aria-hidden="true"></span><span id="preview-hint">Kontroller için imleci adanın üzerine getir.</span><button id="preview-reopen" type="button" hidden>Önizlemeyi aç</button></div>
           </div>
           <figcaption id="preview-caption">
             <div class="preview-caption-copy"><span class="preview-dot" aria-hidden="true"></span><span><span id="preview-status" aria-live="polite">Tüm limitler · örnek veriler</span><span class="drag-tip"> · Adayı sürükle</span></span></div>
@@ -118,7 +117,7 @@
         <div class="section-copy"><p class="section-label">İndirmeden önce.</p><h2 id="questions-title">Birkaç küçük detay.</h2></div>
         <div class="question-list">
           <details><summary>Küçük görünümde hangi limit gösterilir?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>Codex’te varsa 5 saatlik, yoksa haftalık limit seçilir. Cursor’da Cursor Models görünür. Antigravity’de Gemini, Argon ve Other Models için varsa 5 saatlik, yoksa haftalık pencere kullanılır.</p><p>Bir grubun haftalık hakkı tükenmişse, kısa pencerede hak görünse bile yatay özette o grup %0 olur. Eksik bir ölçüm %0’a çevrilmez; devre dışı pencere “kapalı” gösterilir.</p></div></details>
-          <details><summary>Gerçekte ne kadar bellek kullanıyor?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>23 Ekim 2026’da bu Windows cihazında alınan son ölçümde çalışma kümesi <strong>27,4 MB</strong>, özel bellek yaklaşık <strong>5 MB</strong>. Kurulum EXE’si 2,1 MB, uygulamanın kendi EXE’si 5,2 MB. Kullanım, Windows’a ve çalışma durumuna göre değişir.</p><p>Arayüz Rust ve Windows API ile çizilir. Electron, WebView veya Node süreci çalıştırılmaz.</p></div></details>
+          <details><summary>Gerçekte ne kadar bellek kullanıyor?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>29 Ekim 2026’da bu Windows cihazında alınan ölçümlerde çalışma kümesi yaklaşık <strong>19–21 MB</strong>, özel bellek <strong>4–5 MB</strong>. Kurulum EXE’si 2,1 MB, uygulamanın kendi EXE’si 5,2 MB. Kullanım, Windows’a ve çalışma durumuna göre değişir.</p><p>Arayüz Rust ve Windows API ile çizilir. Electron, WebView veya Node süreci çalıştırılmaz.</p></div></details>
           <details><summary>API anahtarı girmem gerekiyor mu?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>Hayır. AgentHUD mevcut uygulama oturumlarını okur. Codex plan limitleri için Codex’e ChatGPT hesabınla giriş yapmış olmalısın; yalnızca API anahtarıyla giriş yeterli değildir.</p></div></details>
           <details><summary>Bir aracın limiti görünmüyorsa?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>İlgili uygulamada oturumunu kontrol et. Antigravity’nin açık olması gerekir. Her hesap aynı limitleri sunmaz; sağlayıcının döndürmediği bir pencere için yüzde üretilmez. AgentHUD dakikada bir yeniden sorgular.</p></div></details>
           <details><summary>Claude hesabımı da görebilir miyim?<span class="expand-mark" aria-hidden="true"></span></summary><div class="answer"><p>Bu sürümde ayrı bir Claude hesabı bağlantısı bulunmuyor. Antigravity’nin Other Models satırı, Antigravity içindeki Claude/GPT kullanım havuzunu gösterir. Claude hesabındaki kullanım hakkı ayrı bir limittir.</p></div></details>
@@ -126,7 +125,7 @@
         </div>
       </section>
 
-      <section class="closing shell" aria-label="Windows için indir"><div><p class="section-label">Masaüstüne küçük bir ek.</p><h2>Bir bakışta,<br /><span>ne kadar kaldığını bil.</span></h2></div><div class="closing-action"><a class="button button-primary" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD-Setup.exe"><svg class="windows-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M2 3h7v7H2zm9 0h7v7h-7zM2 12h7v7H2zm9 0h7v7h-7z" /></svg>Windows için indir</a><p class="download-note">v0.10.1 · Windows 10 / 11 · Kurulum EXE’si · 2,1 MB</p></div></section>
+      <section class="closing shell" aria-label="Windows için indir"><div><p class="section-label">Masaüstüne küçük bir ek.</p><h2>Bir bakışta,<br /><span>ne kadar kaldığını bil.</span></h2></div><div class="closing-action"><a class="button button-primary" href="https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD-Setup.exe"><svg class="windows-icon" aria-hidden="true" viewBox="0 0 20 20"><path d="M2 3h7v7H2zm9 0h7v7h-7zM2 12h7v7H2zm9 0h7v7h-7z" /></svg>Windows için indir</a><p class="download-note">v0.10.2 · Windows 10 / 11 · Kurulum EXE’si · 2,1 MB</p></div></section>
     </main>
 
     <footer class="footer shell"><a class="brand" href="#">AgentHUD</a><p><a href="https://serhatkochan.com">Serhat Kochan</a> tarafından geliştirildi.</p><div><a href="https://github.com/serhatkochan/agenthud#readme">Dokümantasyon</a><a href="https://github.com/serhatkochan/agenthud/releases">Sürümler <span aria-hidden="true">↗</span></a></div></footer>

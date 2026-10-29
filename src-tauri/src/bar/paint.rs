@@ -1,9 +1,10 @@
 use super::{
     close_rect, current_frame, dip, percent_text, toggle_rect, wide, Frame, Line, CLOSE_SPACE,
-    COMPACT_BRAND, COMPACT_HEIGHT, GROUP_HEIGHT, HEADER_HEIGHT, ROW_HEIGHT,
+    COMPACT_BRAND, COMPACT_HEIGHT, GROUP_HEIGHT, HEADER_HEIGHT, HOVERED, ROW_HEIGHT,
 };
 use crate::quota_view::CompactQuota;
 use std::ffi::c_void;
+use std::sync::atomic::Ordering;
 use windows_sys::Win32::{
     Foundation::{COLORREF, HWND, POINT, RECT, SIZE},
     Graphics::Gdi::{
@@ -186,43 +187,33 @@ unsafe fn paint_header(
         dpi,
     );
     SelectObject(dc, header_font as _);
-    SetTextColor(dc, rgb(0xE0, 0xEA, 0xE4));
-    paint_text(
-        dc,
-        "AgentHUD",
-        RECT {
-            left: dip(15, dpi),
-            top: 0,
-            right: dip(92, dpi),
-            bottom: height,
-        },
-        DT_LEFT | DT_VCENTER | DT_SINGLELINE,
-    );
-    let toggle = toggle_rect(hwnd);
-    SetTextColor(dc, rgb(0xBA, 0xCC, 0xC1));
-    paint_text(
-        dc,
-        if frame.collapsed { "+" } else { "−" },
-        RECT {
-            left: toggle.left,
-            top: toggle.top,
-            right: toggle.right,
-            bottom: toggle.bottom,
-        },
-        DT_CENTER | DT_VCENTER | DT_SINGLELINE,
-    );
-    let close = close_rect(hwnd);
-    paint_text(
-        dc,
-        "×",
-        RECT {
-            left: close.left,
-            top: close.top,
-            right: close.right,
-            bottom: close.bottom,
-        },
-        DT_CENTER | DT_VCENTER | DT_SINGLELINE,
-    );
+    if HOVERED.load(Ordering::Relaxed) {
+        let toggle = toggle_rect(hwnd);
+        SetTextColor(dc, rgb(0xBA, 0xCC, 0xC1));
+        paint_text(
+            dc,
+            if frame.collapsed { "+" } else { "−" },
+            RECT {
+                left: toggle.left,
+                top: toggle.top,
+                right: toggle.right,
+                bottom: toggle.bottom,
+            },
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE,
+        );
+        let close = close_rect(hwnd);
+        paint_text(
+            dc,
+            "×",
+            RECT {
+                left: close.left,
+                top: close.top,
+                right: close.right,
+                bottom: close.bottom,
+            },
+            DT_CENTER | DT_VCENTER | DT_SINGLELINE,
+        );
+    }
     if !frame.collapsed {
         rule(
             dc,

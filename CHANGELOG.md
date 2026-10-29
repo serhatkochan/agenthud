@@ -1,5 +1,10 @@
 # Değişiklikler
 
+## 0.10.2 · 29 Ekim 2026
+
+- Ada üzerindeki uygulama adı kaldırıldı ve yatay görünüm daraltıldı.
+- +, − ve × kontrolleri imleç adanın üzerindeyken gösterilir.
+
 ## 0.10.1 · 23 Ekim 2026
 
 - Windows kurulum EXE’si eklendi. Kurulum mevcut kullanıcıya yapılır; masaüstü ve Başlat menüsü kısayolları ile Windows uygulama kaldırma kaydı oluşturur.

@@ -8,9 +8,9 @@
   <a href="https://github.com/serhatkochan/agenthud/releases">Sürümler</a>
 </p>
 
-![AgentHUD başlığı, küçültme düğmesi ve ayrı kota satırlarıyla güncel web önizlemesi](site/assets/preview.jpg)
+![Ayrı kota satırlarıyla güncel ada önizlemesi](site/assets/preview.jpg)
 
-AgentHUD, AI araçlarında **ne kadar hakkın kaldığını** aynı yerde gösteren kompakt bir Windows uygulamasıdır. Şeffaf ada diğer pencerelerin üzerinde durur. Yatay özetle açılır; başlıktaki **+** bütün limitleri gösterir, **−** yeniden küçültür. İstediğin yere sürükle; koduna devam et.
+AgentHUD, AI araçlarında **ne kadar hakkın kaldığını** aynı yerde gösteren kompakt bir Windows uygulamasıdır. Şeffaf ada diğer pencerelerin üzerinde durur. Yatay özetle açılır; üzerine gelince görünen **+** bütün limitleri gösterir, **−** yeniden küçültür. İstediğin yere sürükle; koduna devam et.
 
 Arayüz Rust ve Windows API ile çizilir. Çalışırken Electron, WebView veya Node süreci açılmaz.
 
@@ -22,7 +22,7 @@ Arayüz Rust ve Windows API ile çizilir. Çalışırken Electron, WebView veya 
 2. Cursor’da ve Codex uygulamasında veya CLI’da hesabına giriş yapmış ol. Codex plan limitleri için ChatGPT hesabıyla giriş gerekir; yalnızca API anahtarı yeterli değildir.
 3. Antigravity limitlerini de görmek için Antigravity’yi açık tut ve hesabına giriş yap.
 
-Ada ilk açılışta ekranın sağ üstünde yatay özet olarak görünür. Başlıktaki **+** bütün limitleri açar, **−** yeniden küçültür. Boş bir yerinden sürükleyerek taşıyabilir, **×** ile kapatabilirsin. Pencere odaktayken Space veya Enter görünümü değiştirir; Escape bütün limitleri açar. Haklar **60 saniyede bir** yenilenir. Ayrı bir AgentHUD hesabı veya elle API anahtarı girişi gerekmez.
+Ada ilk açılışta ekranın sağ üstünde yatay özet olarak görünür. İmleci üzerine getirince **+**, **−** ve **×** kontrolleri görünür. **+** bütün limitleri açar, **−** yeniden küçültür. Boş bir yerinden sürükleyerek taşıyabilir, **×** ile kapatabilirsin. Pencere odaktayken Space veya Enter görünümü değiştirir; Escape bütün limitleri açar. Haklar **60 saniyede bir** yenilenir. Ayrı bir AgentHUD hesabı veya elle API anahtarı girişi gerekmez.
 
 Uygulama görev çubuğunda yer kaplamaz. **× uygulamayı tamamen kapatır**; yeniden açmak için masaüstü kısayolunu kullan.
 
@@ -31,8 +31,6 @@ Kurulum yalnızca mevcut kullanıcıya, varsayılan olarak `%LOCALAPPDATA%\Progr
 Kurulumsuz kullanım için [AgentHUD.exe](https://github.com/serhatkochan/agenthud/releases/latest/download/AgentHUD.exe) de sürüm dosyalarında bulunur.
 
 ### Küçük görünümde hangi hak seçilir?
-
-![AgentHUD yatay özeti: Codex, Cursor Models, Gemini, Argon ve Other Models; örnek veriler](site/assets/compact.jpg)
 
 | Gösterge | Seçilen limit |
 | --- | --- |
@@ -62,12 +60,12 @@ Ayrı bir Claude hesabı bağlantısı bu sürümde bulunmuyor. Antigravity’ni
 
 | Ölçüm | Değer |
 | --- | --- |
-| v0.10.1 kurulum EXE’si | **2,1 MB** (2.093.282 bayt) |
-| Uygulama EXE’si | **5,2 MB** (5.227.008 bayt) |
-| Çalışma kümesi (RAM) | Son canlı ölçümde **27,4 MB** |
-| Özel bellek (private bytes) | Aynı ölçümde yaklaşık **5 MB** |
+| v0.10.2 kurulum EXE’si | Yaklaşık **2,1 MB** |
+| Uygulama EXE’si | Yaklaşık **5,2 MB** |
+| Çalışma kümesi (RAM) | Bu cihazdaki ölçümlerde yaklaşık **19–21 MB** |
+| Özel bellek (private bytes) | Aynı ölçümlerde yaklaşık **4–5 MB** |
 
-Bellek ölçümü 23 Ekim 2026’da çalışan Windows uygulamasından alındı. Çalışma kümesi, özel bellek ve dosya boyutu farklı ölçümlerdir. RAM tüketimi Windows’a, yenileme anına ve çalışma süresine göre değişir; bu değerler sabit bir üst sınır değildir.
+Bellek ölçümü 29 Ekim 2026’da çalışan Windows uygulamasından alındı. Çalışma kümesi, özel bellek ve dosya boyutu farklı ölçümlerdir. RAM tüketimi Windows’a, yenileme anına ve çalışma süresine göre değişir; bu değerler sabit bir üst sınır değildir.
 
 ## Oturum ve veri akışı
 

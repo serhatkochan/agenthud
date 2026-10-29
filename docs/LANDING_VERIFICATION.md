@@ -35,7 +35,6 @@ Chrome, gerçek yerel sayfa:
 Önizleme değerleri açıkça örnek olarak etiketlidir. Görseller gerçek tarayıcıda çalışan bu web önizlemesinden kaydedildi; Windows uygulamasının ekran görüntüsü olarak sunulmaz.
 
 - `site/assets/preview.jpg`: README görseli.
-- `site/assets/compact.jpg`: beş ayrı grubun göründüğü yatay özet.
 - `site/assets/social.jpg`: 1200 × 630 bağlantı paylaşım görseli.
 
 Sayfa statik HTML / CSS ve küçük bir JavaScript dosyasıdır. Harici yazı tipi, analiz betiği veya yeni paket bağımlılığı eklenmedi.

@@ -10,7 +10,7 @@ use serde_json::{json, Value};
 use std::{
     ffi::c_void,
     sync::{
-        atomic::{AtomicIsize, Ordering},
+        atomic::{AtomicBool, AtomicIsize, Ordering},
         Mutex, OnceLock,
     },
     time::Duration,
@@ -29,11 +29,12 @@ use windows_sys::Win32::{
         },
         WindowsAndMessaging::{
             CreateWindowExW, DefWindowProcW, DestroyWindow, DispatchMessageW, FindWindowW,
-            GetClientRect, GetMessageW, GetWindowRect, LoadCursorW, LoadIconW, PostMessageW,
-            PostQuitMessage, RegisterClassW, SetForegroundWindow, SetWindowPos, ShowWindow,
-            SystemParametersInfoW, TranslateMessage, CS_HREDRAW, CS_VREDRAW, HTCAPTION, HTCLIENT,
-            HWND_TOPMOST, IDC_ARROW, SPI_GETWORKAREA, SWP_NOACTIVATE, SW_SHOW, WM_DESTROY,
-            WM_DPICHANGED, WM_ERASEBKGND, WM_KEYDOWN, WM_LBUTTONUP, WM_NCHITTEST, WM_PAINT,
+            GetClientRect, GetCursorPos, GetMessageW, GetWindowRect, KillTimer, LoadCursorW,
+            LoadIconW, PostMessageW, PostQuitMessage, RegisterClassW, SetForegroundWindow,
+            SetTimer, SetWindowPos, ShowWindow, SystemParametersInfoW, TranslateMessage,
+            CS_HREDRAW, CS_VREDRAW, HTCAPTION, HTCLIENT, HWND_TOPMOST, IDC_ARROW, SPI_GETWORKAREA,
+            SWP_NOACTIVATE, SW_SHOW, WM_DESTROY, WM_DPICHANGED, WM_ERASEBKGND, WM_KEYDOWN,
+            WM_LBUTTONUP, WM_MOUSEMOVE, WM_NCHITTEST, WM_NCMOUSEMOVE, WM_PAINT, WM_TIMER,
             WNDCLASSW, WS_EX_LAYERED, WS_EX_TOOLWINDOW, WS_EX_TOPMOST, WS_POPUP, WS_VISIBLE,
         },
     },
@@ -44,11 +45,11 @@ const WINDOW_EX_STYLE: u32 = WS_EX_LAYERED | WS_EX_TOPMOST | WS_EX_TOOLWINDOW;
 const NAMES: [&str; 3] = ["Codex", "Cursor", "Antigravity"];
 const IDS: [&str; 3] = ["codex", "cursor", "antigravity"];
 const PANEL_WIDTH: i32 = 368;
-const HEADER_HEIGHT: i32 = 42;
+const HEADER_HEIGHT: i32 = 32;
 const ROW_HEIGHT: i32 = 23;
 const GROUP_HEIGHT: i32 = 28;
 const COMPACT_HEIGHT: i32 = 50;
-const COMPACT_BRAND: i32 = 138;
+const COMPACT_BRAND: i32 = 36;
 const COMPACT_CELL: i32 = 104;
 const CLOSE_SPACE: i32 = 34;
 
@@ -100,6 +101,8 @@ impl Frame {
 
 static STATE: OnceLock<Mutex<Bar>> = OnceLock::new();
 static WINDOW: AtomicIsize = AtomicIsize::new(0);
+static HOVERED: AtomicBool = AtomicBool::new(false);
+const HOVER_TIMER: usize = 42;
 
 pub fn run() {
     let _ = unsafe { SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2) };
@@ -385,6 +388,29 @@ unsafe extern "system" fn wndproc(
             0
         }
         WM_ERASEBKGND => 1,
+        WM_MOUSEMOVE | WM_NCMOUSEMOVE => {
+            if !HOVERED.swap(true, Ordering::Relaxed) {
+                SetTimer(hwnd, HOVER_TIMER, 120, None);
+                InvalidateRect(hwnd, std::ptr::null(), 0);
+            }
+            0
+        }
+        WM_TIMER if wparam == HOVER_TIMER => {
+            let mut point: POINT = std::mem::zeroed();
+            let mut rect: RECT = std::mem::zeroed();
+            if GetCursorPos(&mut point) == 0
+                || GetWindowRect(hwnd, &mut rect) == 0
+                || point.x < rect.left
+                || point.x >= rect.right
+                || point.y < rect.top
+                || point.y >= rect.bottom
+            {
+                KillTimer(hwnd, HOVER_TIMER);
+                HOVERED.store(false, Ordering::Relaxed);
+                InvalidateRect(hwnd, std::ptr::null(), 0);
+            }
+            0
+        }
         WM_NCHITTEST => hit(hwnd, lparam),
         WM_LBUTTONUP => {
             if in_close(hwnd, lparam) {
@@ -419,6 +445,8 @@ unsafe extern "system" fn wndproc(
             0
         }
         WM_DESTROY => {
+            KillTimer(hwnd, HOVER_TIMER);
+            HOVERED.store(false, Ordering::Relaxed);
             WINDOW.store(0, Ordering::Relaxed);
             PostQuitMessage(0);
             0
@@ -494,9 +522,9 @@ fn toggle_rect(hwnd: HWND) -> BoxRect {
     };
     let top = (header - dip(32, dpi)) / 2;
     BoxRect {
-        left: dip(93, dpi),
+        left: dip(4, dpi),
         top,
-        right: dip(128, dpi),
+        right: dip(35, dpi),
         bottom: top + dip(32, dpi),
     }
 }
@@ -526,8 +554,8 @@ mod tests {
                 class.as_ptr(),
                 class.as_ptr(),
                 WS_POPUP,
-                0,
-                0,
+                -20000,
+                -20000,
                 692,
                 50,
                 std::ptr::null_mut(),
@@ -537,6 +565,11 @@ mod tests {
             );
             assert!(!hwnd.is_null());
             let style = GetWindowLongW(hwnd, GWL_EXSTYLE) as u32;
+            HOVERED.store(false, Ordering::Relaxed);
+            wndproc(hwnd, WM_MOUSEMOVE, 0, 0);
+            assert!(HOVERED.load(Ordering::Relaxed));
+            wndproc(hwnd, WM_TIMER, HOVER_TIMER, 0);
+            assert!(!HOVERED.load(Ordering::Relaxed));
             let close = close_rect(hwnd);
             let x = (close.left + close.right) / 2;
             let y = (close.top + close.bottom) / 2;

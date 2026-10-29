@@ -63,14 +63,16 @@ h1 span { color: #63817a; }
 .desktop[data-wallpaper="dark"] .fold-three { background: linear-gradient(105deg, #526752, #a1a086 48%, #737c65 49%, #2d4840); }
 .island { position: absolute; z-index: 2; top: 85px; left: 50%; width: min(368px, calc(100% - 44px)); transform: translateX(-50%); padding: 8px 18px 16px; border: 1px solid #ffffff30; border-radius: 18px; background: #1d2929d9; backdrop-filter: blur(26px); -webkit-backdrop-filter: blur(26px); color: #ecf0ef; box-shadow: 0 24px 52px #24352d38, 0 4px 12px #24352d15, inset 0 1px 0 #ffffff0a; }
 .island-top { display: flex; align-items: center; gap: 4px; border-bottom: 1px solid #ffffff13; margin: -3px 0 3px; }
-.drag-handle { display: inline-flex; align-items: center; flex: 0 0 auto; min-height: 36px; padding: 0 5px 0 0; border: none; background: none; color: #e0e8e4; text-align: left; font-size: 11px; font-weight: 600; cursor: grab; touch-action: none; user-select: none; }
+.drag-handle { display: inline-flex; align-items: center; flex: 0 0 12px; min-height: 36px; padding: 0; border: none; background: none; cursor: grab; touch-action: none; user-select: none; }
 .drag-handle:active { cursor: grabbing; }
 .drag-handle:focus-visible { outline-color: #a9d5be; outline-offset: 1px; border-radius: 3px; }
-.island-control { flex: 0 0 30px; width: 30px; height: 36px; border: 0; padding: 0; border-radius: 5px; background: none; color: #c5d1cb; font-size: 18px; line-height: 1; }
+.island-control { flex: 0 0 30px; width: 30px; height: 36px; border: 0; padding: 0; border-radius: 5px; background: none; color: #c5d1cb; font-size: 18px; line-height: 1; opacity: 0; pointer-events: none; }
+.island:hover .island-control, .island:has(:focus-visible) .island-control { opacity: 1; pointer-events: auto; }
+@media (hover: none) { .island-control { opacity: 1; pointer-events: auto; } }
 .island-control:hover { background: #ffffff14; color: #fff; }
 .island-control:focus-visible { outline-color: #a9d5be; outline-offset: 1px; }
 .island-column { margin-left: auto; font-size: 9px; color: #c0cdc7; }
-.island-close { font-size: 17px; }
+.island-close { font-size: 17px; margin-left: auto; }
 .quota-group { margin: 0; }
 .quota-group + .quota-group { border-top: 1px solid #ffffff10; margin-top: 7px; padding-top: 2px; }
 .quota-group h3 { font-size: 11px; font-weight: 600; margin: 10px 0 4px; color: #c3d0ca; }
@@ -93,7 +95,7 @@ h1 span { color: #63817a; }
 .summary-item small { margin-left: 4px; color: #c0cdc7; font-size: 7px; font-weight: 400; }
 .summary-item dd.warning { color: #f4d29b; }
 .summary-item dd.danger { color: #ffb4a9; }
-.island[data-view="compact"] { display: flex; align-items: center; gap: 3px; width: min(692px, calc(100% - 24px)); padding: 7px 9px; border-radius: 15px; }
+.island[data-view="compact"] { display: flex; align-items: center; gap: 3px; width: min(590px, calc(100% - 24px)); padding: 7px 9px; border-radius: 15px; }
 .island[data-view="compact"] .island-top { display: contents; }
 .island[data-view="compact"] .drag-handle { font-size: 10px; }
 .island[data-view="compact"] .island-control { flex-basis: 24px; width: 24px; }
